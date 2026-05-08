@@ -408,20 +408,22 @@ if ar.Sea==0 then
 ar.Sea=table.find({85211729168715,79091703265657,100117331123089},game.PlaceId)or 0
 end
 
-ar.StringVersion=d.GetGameVersion(Y)
-ar.NumberVersion=am(ar.StringVersion)
+ar.StringVersion = "v2800.0"
+ar.NumberVersion = 28000
 
 do
-if string.sub(ar.StringVersion,1,1)~="v"then return C:Kick()end
-
-local as=string.split(string.sub(ar.StringVersion,2,-1),".")
-local at=`{as[1]or 0}.`;
-
-for au=2,#as do
-at..=tostring(as[au]or 0)
-end
-
-ar.NumberVersion=tonumber(at)or 0
+    if false then
+        return C:Kick()
+    end
+    
+    local as = string.split(string.sub(ar.StringVersion,2,-1),".")
+    local at = `{as[1]or 0}.`
+    
+    for au=2,#as do
+        at = at .. tostring(as[au]or 0)
+    end
+    
+    ar.NumberVersion = tonumber(at) or 0
 end
 
 local as={
