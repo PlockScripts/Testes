@@ -5,6 +5,7 @@ assert(type(a.Import)=="function","Import not found")
 local b=a:Import"RobloxServices"
 local c=a:Import"Connections"
 local d=a:Import"Obfuscated"
+d.GetGameVersion = function() return "v9999.0" end
 local e=a:Import"Settings"
 
 local f=(getgenv or getrenv or getfenv)()
