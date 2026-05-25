@@ -1624,9 +1624,9 @@ local Module = {} do
 		return Inventory
 	end)()
 	
-	Module.FastAttack = (function()
+   Module.FastAttack = (function()
 		local FastAttack = {
-			Distance = 50,
+			Distance = 55,
 			attackMobs = true,
 			attackPlayers = true,
 			Equipped = nil,
@@ -1640,7 +1640,7 @@ local Module = {} do
 					MaxOverheat = 3,
 					Cooldown = 0,
 					TotalOverheat = 0,
-					Distance = 400,
+					Distance = 500,
 					Shooting = false
 				}
 			},
@@ -1652,6 +1652,10 @@ local Module = {} do
 				["Bazooka"] = "Position",
 				["Cannon"] = "Position",
 				["Dragonstorm"] = "Overheat"
+			},
+           FruitClick = {
+				["Blade-Blade"] = true,
+				["Gas-Gas"] = true
 			},
 			NormalClickFruits = {
 				["Light-Light"] = true,
@@ -1672,23 +1676,13 @@ local Module = {} do
 			return getupvalue(require(ReplicatedStorage.Controllers.CombatController).Attack, 9)
 		end)
 		
-		local HIT_FUNCTION; task.defer(function()
-			local PlayerScripts = Player:WaitForChild("PlayerScripts")
-			local LocalScript = PlayerScripts:FindFirstChildOfClass("LocalScript")
-			
-			while not LocalScript do
-				Player.PlayerScripts.ChildAdded:Wait()
-				LocalScript = PlayerScripts:FindFirstChildOfClass("LocalScript")
-			end
-			
+		local HIT_FUNCTION; task.defer(function()			
 			if getsenv then
-				local Success, ScriptEnv = pcall(getsenv, LocalScript)
-				
-				if Success and ScriptEnv then
-					HIT_FUNCTION = ScriptEnv._G.SendHitsToServer
+					HIT_FUNCTION = (getmenv or getsenv)(Net)._G.SendHitsToServer
 				end
-			end
 		end)
+
+        local IsAlive = Module.IsAlive
 		
 		FastAttack.ShootsFunctions = {
 			["Skull Guitar"] = function(self: FastAttack, Equipped: Tool, Position: Vector3): (nil)
@@ -1743,7 +1737,7 @@ local Module = {} do
 			end
 			
 			for _, Boat in Enemies:GetChildren() do
-				if not Boat:GetAttribute("IsBoat") then continue end
+                if not Boat:GetAttribute("IsBoat") then continue end
 				local BasePart = Boat:FindFirstChildOfClass("MeshPart")
 				
 				if IsAlive(Boat) and BasePart and (MyRootPartPosition - BasePart.Position).Magnitude < Distance then
@@ -1777,7 +1771,7 @@ local Module = {} do
 			return Hitbox.Position, Hitbox;
 		end
 		
-		local function ProcessHits(List: Folder, Equipped: Tool, Distance: number): (nil)
+    	local function ProcessHits(List: Folder, Equipped: Tool, Distance: number): (nil)
 			local MyCharacter = Player.Character;
 			local Targets = List:GetChildren();
 			local MaxHits = GetMaxHits(MyCharacter) + 1;
@@ -1797,8 +1791,9 @@ local Module = {} do
 					end
 				end
 				
-				if RootPart and (Character.Parent ~= Characters or CheckPlayerAlly(Character)) then
-					local Hitbox = GetRandomHitboxLimb(Character) or RootPart
+               local TargetPlayer = game:GetService("Players"):GetPlayerFromCharacter(Character)
+               if RootPart and (Character.Parent ~= Characters or (TargetPlayer and CheckPlayerAlly(TargetPlayer))) then
+					local Hitbox = RootPart
 					
 					if Hitbox and (MyRootPartPosition - RootPart.Position).Magnitude <= Distance then
 						NewBladeHit(Hitbox, Character)
@@ -1806,7 +1801,7 @@ local Module = {} do
 				end
 			end
 		end
-		
+	
 		function FastAttack:DontAttackBelowPercent(Percent: number): boolean
 			if SUCCESS_FLAGS and not COMBAT_REMOTE_THREAD or SUCCESS_FLAGS and COMBAT_REMOTE_THREAD and HIT_FUNCTION then
 				BelowHealthPercent = Percent
@@ -1954,76 +1949,92 @@ local Module = {} do
 			setupvalue(SHOOT_FUNCTION, 18, v7) -- v46, 18
 			
 			return math.floor(v9 / v4 * 16777215), v7
-		end
+		end  
+
+    local function IsValidTarget(Target)
+	if not (Target and Target.Parent) then return false end
+	if IsAlive(Target.Parent) then
+		return true
+	end
+	if Target:FindFirstChild("Health") and Target.Health.Value > 0 then
+		return true
+	end
+	return false
+end
+
+local function AddShot(Equipped)
+	Equipped:SetAttribute("LocalTotalShots",(Equipped:GetAttribute("LocalTotalShots") or 0) + 1)
+end
+
+function FastAttack:HandleOverheat(Equipped, Data)
+	if Data.Shooting then return end
+    self:UpdateBladeHits(Data.Distance, false, true)
+	if #CurrentBladeHits == 0 then return end
+	local Position, PrimaryPart = ConvertToGunHits()
+	local Target = PrimaryPart
+	if not IsValidTarget(Target) then return end
+	Data.Shooting = true
+	while Equipped and Equipped.Parent == Player.Character and Data.TotalOverheat < Data.MaxOverheat do
+		if not IsValidTarget(Target) then break end
+		AddShot(Equipped)
+		GunValidator:FireServer(self:GetValidator2())
+		RE_ShootGunEvent:FireServer(Target.Position, { Target })	
+		Data.TotalOverheat += task.wait(Data.Cooldown)
+	end
+	while Data.TotalOverheat > 0 do
+		Data.TotalOverheat = math.clamp(Data.TotalOverheat - task.wait(),0,Data.MaxOverheat)
+	end
+	Data.Shooting = false
+end
+
+function FastAttack:HandleNormal(Equipped)
+	self:UpdateBladeHits(100, false, true)
+	if #CurrentBladeHits == 0 then return end
+	local Position, PrimaryPart = ConvertToGunHits()
+	if not (PrimaryPart and PrimaryPart.Parent) then return end
+	AddShot(Equipped)
+	GunValidator:FireServer(self:GetValidator2())	
+	local shoots = self.ShootsPerTarget[Equipped.Name] or 1
+	for _ = 1, shoots do
+		RE_ShootGunEvent:FireServer(Position, CurrentBladeHits)
+	end
+end
+
+function FastAttack:HandlePositionOrTap(Equipped)
+	local Target = self:GetClosestEnemy(100)
+	if not IsValidTarget(Target) then return end
+	if self.ShootsFunctions[Equipped.Name] then
+		return self.ShootsFunctions[Equipped.Name](self, Equipped, Target.Position)
+	end
+	AddShot(Equipped)
+	GunValidator:FireServer(self:GetValidator2())
+	if ShootType == "TAP" then
+		Equipped.RemoteEvent:FireServer("TAP", Target.Position)
+	else
+		RE_ShootGunEvent:FireServer(Target.Position)
+	end
+end
+
+function FastAttack:UseGunShoot(Character, Equipped)
+	if not Equipped.Enabled then return end	
+	local ShootType = self.SpecialShoots[Equipped.Name] or "Normal"
+	if ShootType == "Overheat" then
+		local Data = self.Overheat[Equipped.Name]
+		return self:HandleOverheat(Equipped, Data)	
+	elseif ShootType == "Normal" then
+		return self:HandleNormal(Equipped)	
+	elseif ShootType == "Position" or (ShootType == "TAP" and Equipped:FindFirstChild("RemoteEvent")) then
+		return self:HandlePositionOrTap(Equipped)
+	end
+end
 		
-		function FastAttack:UseGunShoot(Character, Equipped)
-			if not Equipped.Enabled then return end
-			
-			local ShootType = self.SpecialShoots[Equipped.Name] or "Normal"
-			
-			if ShootType == "Normal" or ShootType == "Overheat" then
-				local Distance = if ShootType == "Overheat" then self.Overheat[Equipped.Name].Distance else 200
-				self:UpdateBladeHits(Distance, false, true)
-				
-				if #CurrentBladeHits == 0 then
-					return nil
-				end
-				
-				local Position, PrimaryPart = ConvertToGunHits()
-				local PrimaryTarget = PrimaryPart.Parent
-				
-				if ShootType == "Overheat" then
-					self.Debounce = tick() + 9e9
-					
-					while PrimaryTarget.Parent and IsAlive(PrimaryTarget) and Equipped and Equipped.Parent == Player.Character do
-						if PrimaryPart.Parent ~= PrimaryTarget or DistanceFromCharacter(PrimaryPart) > Distance then
-							break
-						end
-						
-						Equipped:SetAttribute("LocalTotalShots", (Equipped:GetAttribute("LocalTotalShots") or 0) + 1)
-						GunValidator:FireServer(self:GetValidator2())
-						RE_ShootGunEvent:FireServer(Position, CurrentBladeHits)
-						task.wait()
-					end
-					
-					self.Debounce = 0
-				elseif PrimaryTarget then
-					Equipped:SetAttribute("LocalTotalShots", (Equipped:GetAttribute("LocalTotalShots") or 0) + 1)
-					GunValidator:FireServer(self:GetValidator2())
-					
-					for i = 1, (self.ShootsPerTarget[Equipped.Name] or 1) do
-						RE_ShootGunEvent:FireServer(Position, CurrentBladeHits)
-					end
-				end
-			elseif ShootType == "Position" or (ShootType == "TAP" and Equipped:FindFirstChild("RemoteEvent")) then
-				local Target = self:GetClosestEnemy(200)
-				
-				if Target then
-					if self.ShootsFunctions[Equipped.Name] then
-						return self.ShootsFunctions[Equipped.Name](self, Equipped, Target.Position)
-					end
-					
-					Equipped:SetAttribute("LocalTotalShots", (Equipped:GetAttribute("LocalTotalShots") or 0) + 1)
-					GunValidator:FireServer(self:GetValidator2())
-					
-					if ShootType == "TAP" then
-						Equipped.RemoteEvent:FireServer("TAP", Target.Position)
-					else
-						RE_ShootGunEvent:FireServer(Target.Position)
-					end
-				end
-			end
-		end
-		
-		table.insert(Connections, Stepped:Connect(function()
-			if not Settings.AutoClick or (tick() - Module.AttackCooldown) <= 1 then return end
+	 	function FastAttack.attack()
+			if not Settings.AutoClick then return end
 			if not IsAlive(Player.Character) then return end
 			
 			local self = FastAttack;
 			local Character = Player.Character;
 			local Humanoid = Character.Humanoid;
-			
-			if not Humanoid.RootPart then return end
 			
 			local Equipped = Character:FindFirstChildOfClass("Tool")
 			local ToolTip = Equipped and Equipped.ToolTip
@@ -2042,20 +2053,26 @@ local Module = {} do
 				self.Debounce = if Combo >= 4 and ToolTip ~= "Gun" then tick() + (Cooldown / 2) else tick();
 				MyRootPartPosition = Character.Humanoid.RootPart.Position;
 				
-				if ToolTip == "Blox Fruit" and not self.NormalClickFruits[Equipped.Name] then
+				if ToolTip == "Blox Fruit" and not self.NormalClickFruits[Equipped.Name] and not self.FruitClick[Equipped.Name] then
+					if Equipped:FindFirstChild("LeftClickRemote") then
+						Equipped.LeftClickRemote:FireServer(Vector3.new(0.01,-500,0.01),1,true)
+					end
+                elseif ToolTip == "Blox Fruit" and self.FruitClick[Equipped.Name] then
 					if Equipped:FindFirstChild("LeftClickRemote") then
 						self:UseFruitM1(Character, Equipped, Combo)
 					end
 				elseif ToolTip == "Gun" then
-					if SUCCESS_SHOOT and SHOOT_FUNCTION and (Settings.AutoShoot or Settings.dStormSea) then
+					if SUCCESS_SHOOT and SHOOT_FUNCTION then
 						self:UseGunShoot(Character, Equipped)
 					end
 				else
 					self:UseNormalClick(Cooldown)
 				end
 			end
-		end))
-		
+		end
+
+       table.insert(Connections, Stepped:Connect(FastAttack.attack))
+
 		return FastAttack
 	end)()
 	
