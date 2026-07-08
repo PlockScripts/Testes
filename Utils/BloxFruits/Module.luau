@@ -2446,7 +2446,7 @@ end
 		
 		local function PossibleStaff(Player)
 			Module.RejoinBlocked = true
-			return LocalPlayer:warn(`{ Player.DisplayName }/@{ Player.Name } maybe it's a blox fruits admin`)
+			return warn(`{ Player.DisplayName }/@{ Player.Name } maybe it's a blox fruits admin`)
 		end
 		
 		local function StaffCheck(Player)
