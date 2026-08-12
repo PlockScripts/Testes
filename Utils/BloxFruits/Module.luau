@@ -411,21 +411,20 @@ local Module = {} do
 		Sea =  SeaId,
 		SeasName = { "Main", "Dressrosa", "Zou" };
 		MaxMastery = 600;
-		MaxLevel = 2650;
+		MaxLevel = 2800;
 		
 		StringVersion = require(ReplicatedStorage.BuildInfo).VERSION;
 	}
 	
-	Module.GameData.NumberVersion = (function()
-		local SplitVersion = string.split(string.sub(Module.GameData.StringVersion, 2, -1), ".")
-		local CurrentVersion = `{ SplitVersion[1] or 0 }.`;
-		
-		for i = 2, #SplitVersion do
-			CurrentVersion ..= tostring(SplitVersion[i] or 0)
-		end
-		
-		return tonumber(CurrentVersion) or 0
-	end)()
+    Module.GameData.NumberVersion = (function()
+       local SplitVersion = string.split(string.sub(Module.GameData.StringVersion, 2), ".")
+       local CurrentVersion = SplitVersion[1] or "0"
+
+       for i = 2, #SplitVersion do
+        CurrentVersion ..= SplitVersion[i] or "0"
+    end
+    return tonumber(CurrentVersion) or 0
+end)()
 	
 	do
 		Module.FruitsId = {
