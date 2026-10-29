@@ -1,10 +1,8 @@
--- This file was generated at discord.gg/syncrypt
-
-local v1 = unpack or table.unpack
-local t1 = { ... }
-local v3 = t1[2]
-local v4 = t1[1]
-local v5 = v3 or {
+local unpackValues = unpack or table.unpack
+local scriptArgs = { ... }
+local userConfig = scriptArgs[2]
+local loader = scriptArgs[1]
+local config = userConfig or {
 	JoinTeam = "Pirates",
 	Translator = true
 }
@@ -40,20 +38,15 @@ local Locations = _WorldOrigin:WaitForChild("Locations")
 _WorldOrigin:WaitForChild("PlayerSpawns")
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local Net = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net")
-local _getgenv = getgenv
-if not _getgenv then
-    _getgenv = getrenv or getfenv
-end
-local v38 = _getgenv()
+local _ENV = (getgenv or getrenv or getfenv)()
 local _ = game.HttpGet
-local t2 = {}
-local t3 = {}
-local v42 = v38.rz_Functions or {}
-local v43 = v38.rz_FarmFunctions or {}
-local rz_Settings = v38.rz_Settings
+local tbl = {}
+local enabledOptionsStore = {}
+local rzFunctions = _ENV.rz_Functions or {}
+local rzFarmFunctions = _ENV.rz_FarmFunctions or {}
+local rz_Settings = _ENV.rz_Settings
 if not rz_Settings then
     local new = Vector3.new
-
     rz_Settings = {
 		AutoBuso = true,
 		BringMobs = true,
@@ -67,114 +60,114 @@ if not rz_Settings then
 		fishSelected = {}
 	}
 end
-local v46 = rz_Settings
-local rz_EnabledOptions = v38.rz_EnabledOptions
+local settings = rz_Settings
+local rz_EnabledOptions = _ENV.rz_EnabledOptions
 if not rz_EnabledOptions then
     rz_EnabledOptions = setmetatable({}, {
-		__newindex = function(_, p2, p3)
-        rawset(t3, p2, p3 or nil)
-        table.clear(v43)
+		__newindex = function(_, arg2, arg3)
+        rawset(enabledOptionsStore, arg2, arg3 or nil)
+        table.clear(rzFarmFunctions)
 
-        for _, v in ipairs(v42) do
-            if rawget(t3, v.Name) then
-                table.insert(v43, v)
+        for _, v in ipairs(rzFunctions) do
+            if rawget(enabledOptionsStore, v.Name) then
+                table.insert(rzFarmFunctions, v)
             end
         end
     end,
-		__index = t3
+		__index = enabledOptionsStore
 	})
 end
-local v48 = rz_EnabledOptions
+local enabledOptions = rz_EnabledOptions
 local PlayerGui = LocalPlayer.PlayerGui
 if not LocalPlayer.Team and not LocalPlayer:FindFirstChild("Main") then
-    local n1 = 0
+    local num3 = 0
 
     while not LocalPlayer.Team and not LocalPlayer:FindFirstChild("Main") do
-        if tick() - n1 >= 0.5 then
-            pcall(function(p4)
+        if tick() - num3 >= 0.5 then
+            pcall(function(arg1)
                 local ChooseTeam = PlayerGui["Main (minimal)"]:WaitForChild("ChooseTeam")
-                local v71 = p4:find("pirate")
-                local v72 = getconnections(ChooseTeam.Container[not v71 and "Marines" or "Pirates"].Frame.TextButton.Activated)
+                local findResult = arg1:find("pirate")
+                local result2 = getconnections(ChooseTeam.Container[not findResult and "Marines" or "Pirates"].Frame.TextButton.Activated)
 
-                for i = 1, #v72 do
-                    v72[i].Function()
+                for i = 1, #result2 do
+                    result2[i].Function()
                 end
-            end, string.lower(v5.JoinTeam or "Pirates"))
-            n1 = tick()
+            end, string.lower(config.JoinTeam or "Pirates"))
+            num3 = tick()
         end
 
         task.wait()
     end
 end
-v38.rz_Functions = v42
-v38.rz_Settings = v46
-v38.rz_EnabledOptions = v48
-v38.rz_FarmFunctions = v43
-local v51 = rz_connections or {}
-v38.rz_connections = v51
-for _, v in ipairs(v51) do
+_ENV.rz_Functions = rzFunctions
+_ENV.rz_Settings = settings
+_ENV.rz_EnabledOptions = enabledOptions
+_ENV.rz_FarmFunctions = rzFarmFunctions
+local connections = rz_connections or {}
+_ENV.rz_connections = connections
+for _, v in ipairs(connections) do
     v:Disconnect()
 end
-table.clear(v51)
-local u54
-local u55
+table.clear(connections)
+local library
+local Module
 local MoveCharacter
-local t4 = {
+local tbl2 = {
 	Marines = function()
-    u55.FireRemote("SetTeam", "Marines")
+    Module.FireRemote("SetTeam", "Marines")
 end,
 	Pirates = function()
-    u55.FireRemote("SetTeam", "Pirates")
+    Module.FireRemote("SetTeam", "Pirates")
 end
 }
-local t5 = {}
-local function v59(p5)
-    local p5_2 = CollectionService:GetTagged(p5)
+local tbl3 = {}
+local function getTaggedList(arg12)
+    local taggedList = CollectionService:GetTagged(arg12)
 
-    table.insert(v51, CollectionService:GetInstanceAddedSignal(p5):Connect(function(p6)
-        table.insert(p5_2, p6)
+    table.insert(connections, CollectionService:GetInstanceAddedSignal(arg12):Connect(function(arg13)
+        table.insert(taggedList, arg13)
     end))
 
-    return p5_2
+    return taggedList
 end
-t5.Chests = v59("_ChestTagged")
-t5.Berries = v59("BerryBush")
-local t6 = {
+tbl3.Chests = getTaggedList("_ChestTagged")
+tbl3.Berries = getTaggedList("BerryBush")
+local tbl4 = {
 	AllCodes = function()
-    local v108 = v4.get("{Utils}BloxFruits/Codes.txt")
-    local parts = string.split(string.gsub(v108, "\n", ""), "~")
+    local result3 = loader.get("{Utils}BloxFruits/Codes.txt")
+    local parts = string.split(string.gsub(result3, "\n", ""), "~")
 
     for i = 1, #parts do
         Remotes.Redeem:InvokeServer(parts[i])
     end
 end,
-	GetTimer = function(p7)
-    local v103 = math.floor(p7)
-    local v104 = math.floor(p7 / 60)
-    local v105 = math.floor(p7 / 60 / 60) * 60
-    local v106 = v103 - v104 * 60
-    local v107 = v104 - v105
+	GetTimer = function(arg14)
+    local floor2 = math.floor(arg14)
+    local floor3 = math.floor(arg14 / 60)
+    local floor4 = math.floor(arg14 / 60 / 60) * 60
+    local val = floor2 - floor3 * 60
+    local val2 = floor3 - floor4
 
-    return (v107 < 10 and "0" .. tostring(v107) or v107) .. ":" .. (v106 < 10 and "0" .. tostring(v106) or v106)
+    return (val2 < 10 and "0" .. tostring(val2) or val2) .. ":" .. (val < 10 and "0" .. tostring(val) or val)
 end
 }
-local t7 = {
+local Core2 = {
 	Managers = {}
 }
-local Managers = t7.Managers
+local Managers = Core2.Managers
 function Managers.TweenManager()
-    local t8 = {
+    local tbl5 = {
 		QueueNumber = 1,
 		InDebounce = false
 	}
-    local v75 = u55.RunFunctions.TweenModule()
-    local t9 = {
+    local tweenModule = Module.RunFunctions.TweenModule()
+    local tbl6 = {
 		["Sky Island 1"] = Vector3.new(-4652, 873, -1754),
 		["Sky Island 2"] = Vector3.new(-7895, 5547, -380),
 		["Under Water Island"] = Vector3.new(61164, 15, 1820),
 		["Under Water Island Entrace"] = Vector3.new(3865, 20, -1926)
 	}
-    local t10 = {
+    local tbl7 = {
 		["Flamingo Mansion"] = Vector3.new(-317, 331, 597),
 		["Flamingo Room"] = Vector3.new(2283, 15, 867),
 		["Cursed Ship"] = Vector3.new(923, 125, 32853),
@@ -185,9 +178,9 @@ function Managers.TweenManager()
     local vector3_3 = Vector3.new(28286, 14897, 103)
     local vector3_4 = Vector3.new(-5090, 319, -3146)
     local vector3_5 = Vector3.new(2953, 2282, -7217)
-    local v83 = ({
-		t9,
-		t10,
+    local val3 = ({
+		tbl6,
+		tbl7,
 		{
 			Mansion = vector3,
 			["Hydra Island"] = vector3_2,
@@ -195,132 +188,132 @@ function Managers.TweenManager()
 			["Sea Castle"] = vector3_4,
 			["Great Tree"] = vector3_5
 		}
-	})[u55.GameData.Sea]
-    local Unlocked = u55.Inventory.Unlocked
-    local Sea = u55.GameData.Sea
-    local IsAlive = u55.IsAlive
-    local FireRemote = u55.FireRemote
-    local Tween = u55.Tween
-    local n2 = 0
-    local n3 = 0
-    local u91
+	})[Module.GameData.Sea]
+    local Unlocked = Module.Inventory.Unlocked
+    local Sea = Module.GameData.Sea
+    local IsAlive = Module.IsAlive
+    local FireRemote = Module.FireRemote
+    local Tween = Module.Tween
+    local num4 = 0
+    local num5 = 0
+    local val4
     local p16Position
-    local u93
+    local val5
     local cFrame = CFrame.new(28610, 14897, 105)
-    local v95 = Vector3.yAxis * -25.2
-    local function v96(p8)
+    local vector = Vector3.yAxis * -25.2
+    local function helper(arg15)
         if Entarce == "Spawn Point" then
             return not LocalPlayer.Character:GetAttribute("InCombat")
         end
 
-        local v439 = Sea == 3
+        local val6 = Sea == 3
 
-        if v439 then
-            v439 = p8 == "Hydra Island"
+        if val6 then
+            val6 = arg15 == "Hydra Island"
 
-            if not v439 then
-                v439 = p8 == "Sea Castle" or p8 == "Mansion"
+            if not val6 then
+                val6 = arg15 == "Sea Castle" or arg15 == "Mansion"
             end
         end
 
-        if v439 then
+        if val6 then
             return Unlocked["Valkyrie Helm"]
         end
 
         if Sea == 2 then
-            if p8 == "Flamingo Mansion" or p8 == "Flamingo Room" then
+            if arg15 == "Flamingo Mansion" or arg15 == "Flamingo Room" then
                 return Unlocked["Swan Glasses"] or Level.Value >= 1750
             end
 
-            if p8 == "Zombie Island" or p8 == "Cursed Ship" then
+            if arg15 == "Zombie Island" or arg15 == "Cursed Ship" then
                 return Level.Value >= 1000
             end
         end
 
         return true
     end
-    local function v97(p9)
-        local v443
+    local function helper2(arg16)
+        local val7
         local huge = math.huge
-        local v445
-        for k, v in pairs(v83) do
-            local v448 = k
+        local val8
+        for k, v in pairs(val3) do
+            local val9 = k
 
-            if v96(v448) then
-                local Magnitude = (p9 - v).Magnitude
+            if helper(val9) then
+                local Magnitude = (arg16 - v).Magnitude
 
                 if Magnitude < huge then
                     huge = Magnitude
-                    v445 = v
-                    v443 = v448
+                    val8 = v
+                    val7 = val9
                 end
             end
         end
 
-        return v445, v443
+        return val8, val7
     end
-    local function v98()
-        t8.MoveCharacter(cFrame, nil, true)
-        t8:InteractWithNpc(cFrame, "RaceV4Progress", "TeleportBack")
+    local function helper3()
+        tbl5.MoveCharacter(cFrame, nil, true)
+        tbl5:InteractWithNpc(cFrame, "RaceV4Progress", "TeleportBack")
     end
-    local function v99()
-        local v450 = t8
+    local function helper4()
+        local val10 = tbl5
 
-        t8.QueueNumber = t8.QueueNumber + 1
-        v450.InDebounce = false
+        tbl5.QueueNumber = tbl5.QueueNumber + 1
+        val10.InDebounce = false
     end
-    function t8.GetLastPosition(_)
+    function tbl5.GetLastPosition(_)
         return p16Position
     end
-    function t8.TweenToCFrameQueue(p11, p12, p13)
+    function tbl5.TweenToCFrameQueue(self3, arg22, arg32)
         if not IsAlive(LocalPlayer.Character) then
             return false
         end
 
-        if p11.InDebounce and p12[p11.QueueNumber] then
-            return MoveCharacter(p12[p11.QueueNumber] + v95)
+        if self3.InDebounce and arg22[self3.QueueNumber] then
+            return MoveCharacter(arg22[self3.QueueNumber] + vector)
         end
 
-        if #p12 == 1 then
-            p11.MoveCharacter(p12[1], p13)
+        if #arg22 == 1 then
+            self3.MoveCharacter(arg22[1], arg32)
 
             return
         end
 
-        if #p12 > 1 then
-            if p11.QueueNumber > #p12 then
-                p11.QueueNumber = 1
+        if #arg22 > 1 then
+            if self3.QueueNumber > #arg22 then
+                self3.QueueNumber = 1
             end
 
             local PrimaryPart = LocalPlayer.Character.PrimaryPart
-            local v456 = p12[p11.QueueNumber]
+            local val11 = arg22[self3.QueueNumber]
 
-            if PrimaryPart and (PrimaryPart.Position - v456.Position).Magnitude < 5 then
-                p11.InDebounce = true
-                task.delay(0.8, v99)
+            if PrimaryPart and (PrimaryPart.Position - val11.Position).Magnitude < 5 then
+                self3.InDebounce = true
+                task.delay(0.8, helper4)
 
                 return
             end
 
-            p11.MoveCharacter(v456, p13)
+            self3.MoveCharacter(val11, arg32)
         end
     end
-    function t8.InteractWithNpc(_, p15, ...)
-        if LocalPlayer:DistanceFromCharacter(p15.Position) < 5 then
+    function tbl5.InteractWithNpc(_, arg23, ...)
+        if LocalPlayer:DistanceFromCharacter(arg23.Position) < 5 then
             return FireRemote(...)
         end
     end
-    function t8.MoveCharacter(p16, p17, p18, p19)
+    function tbl5.MoveCharacter(arg17, arg24, arg33, arg4)
         if not IsAlive(LocalPlayer.Character) or not LocalPlayer.Character.PrimaryPart then
             return false
         end
 
-        if tick() - n3 <= 1 and p16 == u91 then
+        if tick() - num5 <= 1 and arg17 == val4 then
             return false
         end
 
-        if not p18 then
-            p16Position = p16.Position
+        if not arg33 then
+            p16Position = arg17.Position
         end
 
         local Character = LocalPlayer.Character
@@ -334,59 +327,59 @@ function Managers.TweenManager()
         end
 
         if PrimaryPart.Anchored then
-            v75:stopTween(PrimaryPart)
+            tweenModule:stopTween(PrimaryPart)
 
             return
         end
 
-        n3 = tick()
-        u91 = p16
-        v38.OnFarm = true
+        num5 = tick()
+        val4 = arg17
+        _ENV.OnFarm = true
 
-        local v466 = v46.TweenSpeed or 220
-        local p16Position2 = p16.Position
+        local val12 = settings.TweenSpeed or 220
+        local p16Position2 = arg17.Position
         local Magnitude = (PrimaryPart.Position - p16Position2).Magnitude
 
-        if Magnitude < (not p17 and 120 or 10) then
-            PrimaryPart.CFrame = p16
+        if Magnitude < (not arg24 and 120 or 10) then
+            PrimaryPart.CFrame = arg17
 
-            return v75:stopTween(PrimaryPart)
+            return tweenModule:stopTween(PrimaryPart)
         end
 
         if Character:FindFirstChild("TempSafeZone") then
-            return v75:stopTween(PrimaryPart)
+            return tweenModule:stopTween(PrimaryPart)
         end
 
-        local v469, v470 = v97(p16Position2)
+        local val13, val14 = helper2(p16Position2)
 
-        if v469 and (v469 < Magnitude and (p16Position2 - v469).Magnitude + 300) then
-            if v470 == "Great Tree" then
-                return v98()
+        if val13 and (val13 < Magnitude and (p16Position2 - val13).Magnitude + 300) then
+            if val14 == "Great Tree" then
+                return helper3()
             end
 
-            if tick() - n2 >= 6 or v470 ~= u93 then
-                v75:stopTween(PrimaryPart)
+            if tick() - num4 >= 6 or val14 ~= val5 then
+                tweenModule:stopTween(PrimaryPart)
                 task.wait(0.2)
 
-                local v471 = if not ((p16Position2 - v469).Magnitude < 50) then v469 + (p16Position2 - PrimaryPart.Position).Unit * 40 else p16Position2
+                local val15 = if not ((p16Position2 - val13).Magnitude < 50) then val13 + (p16Position2 - PrimaryPart.Position).Unit * 40 else p16Position2
 
-                u93 = v470
-                n2 = tick()
+                val5 = val14
+                num4 = tick()
 
-                return FireRemote("requestEntrance", v471)
+                return FireRemote("requestEntrance", val15)
             end
         end
 
-        if p17 then
-            return v75.new(PrimaryPart, Magnitude / p17, "CFrame", p16)
+        if arg24 then
+            return tweenModule.new(PrimaryPart, Magnitude / arg24, "CFrame", arg17)
         end
 
-        if not p19 then
+        if not arg4 then
             local PrimaryPartPosition = PrimaryPart.Position
             local cFrame2 = CFrame.new(PrimaryPartPosition.X, p16Position2.Y, PrimaryPartPosition.Z)
 
             if (PrimaryPartPosition - cFrame2.Position).Magnitude > 75 then
-                v75:stopTween(PrimaryPart)
+                tweenModule:stopTween(PrimaryPart)
                 task.wait(0.1)
                 PrimaryPart.CFrame = cFrame2
                 task.wait(0.5)
@@ -394,29 +387,29 @@ function Managers.TweenManager()
         end
 
         if Magnitude < 380 then
-            v75.new(PrimaryPart, Magnitude / (v466 * 2), "CFrame", p16)
+            tweenModule.new(PrimaryPart, Magnitude / (val12 * 2), "CFrame", arg17)
 
             return
         end
 
-        v75.new(PrimaryPart, Magnitude / v466, "CFrame", p16)
+        tweenModule.new(PrimaryPart, Magnitude / val12, "CFrame", arg17)
     end
-    table.insert(v51, Tween:GetPropertyChangedSignal("Parent"):Connect(function()
+    table.insert(connections, Tween:GetPropertyChangedSignal("Parent"):Connect(function()
         if not Tween.Parent and IsAlive(LocalPlayer.Character) then
             local Character = LocalPlayer.Character
             local FindFirstChild = Character.FindFirstChild
 
-            v75:stopTween(FindFirstChild(Character, "HumanoidRootPart"))
+            tweenModule:stopTween(FindFirstChild(Character, "HumanoidRootPart"))
         end
     end))
-    MoveCharacter = t8.MoveCharacter
+    MoveCharacter = tbl5.MoveCharacter
 
-    return t8
+    return tbl5
 end
 function Managers.QuestManager()
-    local Sea = u55.GameData.Sea
+    local Sea = Module.GameData.Sea
     local cFrame = CFrame.new(0, 0, 2.5)
-    local t11 = {
+    local tbl8 = {
 		QuestList = {},
 		EnemyList = {},
 		QuestPos = {},
@@ -428,208 +421,208 @@ function Managers.QuestManager()
     local QuestTitleTitle = Quest.Container.QuestTitle.Title
     local GuideModule = ReplicatedStorage:WaitForChild("GuideModule")
     local Quests = ReplicatedStorage:WaitForChild("Quests")
-    local t12 = {
+    local tbl9 = {
 		GuideModule = GuideModule,
 		Quests = Quests
 	}
 
-    local function v119(p20)
+    local function helper5(arg18)
         local ok, result = pcall(function()
-            return require(t12[p20])
+            return require(tbl9[arg18])
         end)
 
         if not ok then
-            warn(("falha a o carregar Module [ %s ] [ %s ]").format("falha a o carregar Module [ %s ] [ %s ]", p20, result))
+            warn(("falha a o carregar Module [ %s ] [ %s ]").format("falha a o carregar Module [ %s ] [ %s ]", arg18, result))
         end
 
-        return ok and result or v4.load("{Utils}BloxFruits/GameModules/" .. p20 .. ".lua")()
+        return ok and result or fetcher.load("{Utils}BloxFruits/GameModules/" .. arg18 .. ".lua")()
     end
 
-    local v120 = v119("GuideModule")
-    local v121 = v119("Quests")
-    local EnemyLocations = u55.EnemyLocations
-    local _ = u55.EnemySpawned
-    local IsBoss = u55.IsBoss
+    local result4 = helper5("GuideModule")
+    local result5 = helper5("Quests")
+    local EnemyLocations = Module.EnemyLocations
+    local _ = Module.EnemySpawned
+    local IsBoss = Module.IsBoss
 
     task.spawn(function()
-        if v120.Data.IsFakeData then
+        if result4.Data.IsFakeData then
             return nil
         end
 
-        for _, v in pairs(v120.Data.NPCList) do
-            t11.QuestPos[v.NPCName] = CFrame.new(v.Position)
+        for _, v in pairs(result4.Data.NPCList) do
+            tbl8.QuestPos[v.NPCName] = CFrame.new(v.Position)
         end
 
-        setmetatable(v120.Data.NPCList, {
-			__newindex = function(p21, p22, p23)
-            t11.QuestPos[p23.NPCName] = CFrame.new(p23.Position)
+        setmetatable(result4.Data.NPCList, {
+			__newindex = function(arg19, arg25, arg34)
+            tbl8.QuestPos[arg34.NPCName] = CFrame.new(arg34.Position)
 
-            return (rawset(p21, p22, p23))
+            return (rawset(arg19, arg25, arg34))
         end
 		})
     end)
-    task.spawn(u55.RunFunctions.Quests, t11, v121, function(p24)
-        local t13 = {}
-        local t14 = {}
+    task.spawn(Module.RunFunctions.Quests, tbl8, result5, function(arg110)
+        local tbl10 = {}
+        local tbl11 = {}
         local _next = next
-        local Task = p24.Task
-        local v483
+        local Task = arg110.Task
+        local val16
         while true do
-            local v484
+            local val17
 
-            v483, v484 = _next(Task, v483)
+            val16, val17 = _next(Task, val16)
 
-            if not v483 then
+            if not val16 then
                 break
             end
 
-            t14 = EnemyLocations[v483] or {}
-            EnemyLocations[v483] = t14
-            table.insert(t13, v483)
+            tbl11 = EnemyLocations[val16] or {}
+            EnemyLocations[val16] = tbl11
+            table.insert(tbl10, val16)
         end
 
-        return t13, t14
+        return tbl10, tbl11
     end)
 
-    function t11.GetQuest(p25)
-        if p25.oldLevel == Level.Value and p25.CurrentQuest then
-            if p25.oldBoss and u55.Enemies.IsSpawned(p25.oldBoss) then
-                return p25.oldBossQuest
+    function tbl8.GetQuest(self4)
+        if self4.oldLevel == Level.Value and self4.CurrentQuest then
+            if self4.oldBoss and Module.Enemies.IsSpawned(self4.oldBoss) then
+                return self4.oldBossQuest
             end
 
-            return p25.CurrentQuest
+            return self4.CurrentQuest
         end
-        local v488
-        local v489
-        local v490
-        p25.oldLevel = Level.Value
-        local Sea2 = p25.Sea
+        local val18
+        local val19
+        local val20
+        self4.oldLevel = Level.Value
+        local Sea2 = self4.Sea
         local clamp = math.clamp
         local LevelValue = Level.Value
-        local v494 = Sea2 == 1 and 700
-        if not v494 then
-            v494 = if Sea2 ~= 2 then Level.Value else 1500
+        local val21 = Sea2 == 1 and 700
+        if not val21 then
+            val21 = if Sea2 ~= 2 then Level.Value else 1500
         end
-        local v495 = clamp(LevelValue, 0, v494)
-        for _, v in ipairs(p25.QuestList) do
+        local result6 = clamp(LevelValue, 0, val21)
+        for _, v in ipairs(self4.QuestList) do
             local Level2 = v.Enemy.Level
-            local v499 = v.Enemy.Name[1]
+            local val22 = v.Enemy.Name[1]
 
-            if not IsBoss(v499) then
-                if v495 < Level2 then
-                    p25.oldBoss = v488
-                    p25.oldBossQuest = v490
-                    p25.CurrentQuest = v489
+            if not IsBoss(val22) then
+                if result6 < Level2 then
+                    self4.oldBoss = val18
+                    self4.oldBossQuest = val20
+                    self4.CurrentQuest = val19
 
-                    return v489
+                    return val19
                 end
 
-                v489 = v
+                val19 = v
 
                 continue
             end
 
-            v488 = Level2 <= v495 and (Level2 >= v495 - 50 and v499)
-            v490 = v
+            val18 = Level2 <= result6 and (Level2 >= result6 - 50 and val22)
+            val20 = v
         end
-        p25.oldBoss = v488
-        p25.oldBossQuest = v490
-        p25.CurrentQuest = v489
+        self4.oldBoss = val18
+        self4.oldBossQuest = val20
+        self4.CurrentQuest = val19
 
-        return v489
+        return val19
     end
-    function t11.GetQuestPosition(p26, p27)
-        if v120.Data.IsFakeData then
-            local v502 = v120.Data.NPCs[p27]
+    function tbl8.GetQuestPosition(self5, arg26)
+        if result4.Data.IsFakeData then
+            local val23 = result4.Data.NPCs[arg26]
 
-            if v502 then
-                v502 = NPCs:FindFirstChild(v502) or ReplicatedStorage.NPCs:FindFirstChild(v502)
+            if val23 then
+                val23 = NPCs:FindFirstChild(val23) or ReplicatedStorage.NPCs:FindFirstChild(val23)
             end
 
-            return v502 and v502:GetPivot()
+            return val23 and val23:GetPivot()
         end
 
-        return p26.QuestPos[v120.Data.LastClosestNPC]
+        return self5.QuestPos[result4.Data.LastClosestNPC]
     end
-    function t11.VerifyQuest(_, p29)
+    function tbl8.VerifyQuest(_, arg27)
         if not Quest.Visible then
             return false
         end
 
-        local v505 = string.gsub(QuestTitleTitle.Text, "-", ""):lower()
+        local gsub2 = string.gsub(QuestTitleTitle.Text, "-", ""):lower()
 
-        if type(p29) == "string" then
-            return string.find(v505, string.gsub(p29, "-", ""):lower())
+        if type(arg27) == "string" then
+            return string.find(gsub2, string.gsub(arg27, "-", ""):lower())
         end
 
-        for _, v in ipairs(p29) do
-            if string.find(v505, string.gsub(v, "-", ""):lower()) then
+        for _, v in ipairs(arg27) do
+            if string.find(gsub2, string.gsub(v, "-", ""):lower()) then
                 return v
             end
         end
     end
-    function t11.StartQuest(p30, p31, p32, p33)
-        local v512 = p33
+    function tbl8.StartQuest(self6, arg28, arg35, arg42)
+        local val24 = arg42
 
-        if p33 then
-            v512 = LocalPlayer:DistanceFromCharacter(p33.Position) >= 5
+        if arg42 then
+            val24 = LocalPlayer:DistanceFromCharacter(arg42.Position) >= 5
         end
 
-        if v512 then
-            local v513 = p33 * p30._Position
+        if val24 then
+            local val25 = arg42 * self6._Position
 
-            MoveCharacter(v513)
+            MoveCharacter(val25)
 
-            return "Teleporting to NPC: " .. p31
+            return "Teleporting to NPC: " .. arg28
         end
 
-        if p30.takeQuestDebounce then
-            local v514 = not p30.Debounce
+        if self6.takeQuestDebounce then
+            local flag = not self6.Debounce
 
-            if not v514 then
-                v514 = tick() - p30.Debounce >= 75 or p30.InDebounceQuest ~= p32 .. p31
+            if not flag then
+                flag = tick() - self6.Debounce >= 75 or self6.InDebounceQuest ~= arg35 .. arg28
             end
 
-            if v514 then
-                v46.RunningMethod = "Getting Quest: " .. p31
+            if flag then
+                settings.RunningMethod = "Getting Quest: " .. arg28
                 task.wait(0.5)
-                u55.FireRemote("StartQuest", p31, p32)
+                Module.FireRemote("StartQuest", arg28, arg35)
 
-                local v515 = p32 .. p31
+                local val26 = arg35 .. arg28
                 local timestamp = tick()
 
-                p30.InDebounceQuest = v515
-                p30.Debounce = timestamp
+                self6.InDebounceQuest = val26
+                self6.Debounce = timestamp
 
-                return v46.RunningMethod, task.wait(0.5)
+                return settings.RunningMethod, task.wait(0.5)
             end
 
-            return "Quest Debounce: " .. t6.GetTimer(75 - (tick() - p30.Debounce))
+            return "Quest Debounce: " .. tbl4.GetTimer(75 - (tick() - self6.Debounce))
         end
 
         task.wait(0.5)
-        u55.FireRemote("StartQuest", p31, p32)
+        Module.FireRemote("StartQuest", arg28, arg35)
 
-        return "Getting Quest: " .. p31, task.wait(0.5)
+        return "Getting Quest: " .. arg28, task.wait(0.5)
     end
 
-    return t11
+    return tbl8
 end
 function Managers.FarmManager()
     local vector2 = Vector2.new()
-    local t15 = {
+    local tbl12 = {
 		CanFarm = {},
 		EnemyLocation = {},
 		ClickPosition = vector2,
 		axisDebounce = 0
 	}
-    local IsAlive = u55.IsAlive
-    local EnemySpawned = u55.EnemySpawned
-    local EnemyLocations = u55.EnemyLocations
-    local EquipTool = u55.EquipTool
-    local n4 = 0
+    local IsAlive = Module.IsAlive
+    local EnemySpawned = Module.EnemySpawned
+    local EnemyLocations = Module.EnemyLocations
+    local EquipTool = Module.EquipTool
+    local num6 = 0
 
-    t15.Materials = ({
+    tbl12.Materials = ({
 		{
 			"Leather + Scrap Metal",
 			"Magma Ore",
@@ -651,8 +644,8 @@ function Managers.FarmManager()
 			"Conjured Cocoa",
 			"Dragon Scale"
 		}
-	})[u55.GameData.Sea]
-    t15.Enemies = {
+	})[Module.GameData.Sea]
+    tbl12.Enemies = {
 		Elites = {
 			"Deandre",
 			"Diablo",
@@ -677,124 +670,124 @@ function Managers.FarmManager()
 			"Ship Officer"
 		}
 	}
-    t15.FarmModes = {
-		Star = function(p34, p35)
-        local v522 = p35.CFrame + p34:GetNextAxis()
+    tbl12.FarmModes = {
+		Star = function(arg111, arg29)
+        local val27 = arg29.CFrame + arg111:GetNextAxis()
 
-        if LocalPlayer:DistanceFromCharacter(v522.Position) >= 5 then
-            MoveCharacter(v522)
+        if LocalPlayer:DistanceFromCharacter(val27.Position) >= 5 then
+            MoveCharacter(val27)
         end
     end,
-		Orbit = function(_, p37, p38)
-        local p37Parent = p37.Parent
-        local n5 = 0
+		Orbit = function(_, arg210, arg36)
+        local p37Parent = arg210.Parent
+        local num7 = 0
         local elapsed = task.wait()
-        local RunningOption = v46.RunningOption
+        local RunningOption = settings.RunningOption
 
         while true do
-            local v530 = p38 or v46.FarmMode == "Orbit"
+            local val28 = arg36 or settings.FarmMode == "Orbit"
 
-            if v530 then
-                v530 = v48[RunningOption]
+            if val28 then
+                val28 = enabledOptions[RunningOption]
 
-                if v530 then
-                    v530 = p37 and IsAlive(p37Parent)
+                if val28 then
+                    val28 = arg210 and IsAlive(p37Parent)
                 end
             end
 
-            if not v530 then
+            if not val28 then
                 break
             end
 
-            if tick() - n4 >= 1 then
+            if tick() - num6 >= 1 then
                 EquipTool()
             end
 
             EnableBuso()
 
-            local FarmDistance = v46.FarmDistance
+            local FarmDistance = settings.FarmDistance
 
-            n5 += 3.5 * elapsed
-            MoveCharacter(CFrame.new(math.cos(n5) * FarmDistance, 8, math.sin(n5) * FarmDistance) + p37.Position)
-            elapsed = task.wait(not v46.SmoothMode and 0 or 0.1)
+            num7 += 3.5 * elapsed
+            MoveCharacter(CFrame.new(math.cos(num7) * FarmDistance, 8, math.sin(num7) * FarmDistance) + arg210.Position)
+            elapsed = task.wait(not settings.SmoothMode and 0 or 0.1)
         end
     end,
-		Up = function(_, p40)
-        local v519 = p40.CFrame + v46.FarmPos
+		Up = function(_, arg211)
+        local val29 = arg211.CFrame + settings.FarmPos
 
-        if LocalPlayer:DistanceFromCharacter(v519.Position) >= 5 then
-            MoveCharacter(v519)
+        if LocalPlayer:DistanceFromCharacter(val29.Position) >= 5 then
+            MoveCharacter(val29)
         end
     end
 	}
 
-    local t16 = {}
-    local t17 = { CFrame.new(-7742, 5634, -1564) }
-    local t18 = {
+    local tbl13 = {}
+    local tbl14 = { CFrame.new(-7742, 5634, -1564) }
+    local tbl15 = {
 		CFrame.new(-1257, 54, 4091),
 		CFrame.new(-1100, 77, 1152),
 		CFrame.new(-364, 116, 5692)
 	}
     local cFrame = CFrame.new(-5408, 11, 8456)
-    local t19 = { CFrame.new(-5241, 50, -4713) }
+    local tbl16 = { CFrame.new(-5241, 50, -4713) }
     local _CFrame = CFrame
-    local t20 = {
+    local tbl17 = {
 		cFrame,
-		v1(t19)
+		unpackValues(tbl16)
 	}
-    local t21 = {
+    local tbl18 = {
 		_CFrame.new(60931, 19, 1574),
 		false,
 		CFrame.new(-10679, 398, -8975)
 	}
-    local t22 = {
+    local tbl19 = {
 		false,
 		CFrame.new(-3350, 282, -10527)
 	}
-    local t23 = {
+    local tbl20 = {
 		false,
 		CFrame.new(-73, 149, -112)
 	}
-    local t24 = { CFrame.new(-6030, 6, -1281) }
+    local tbl21 = { CFrame.new(-6030, 6, -1281) }
     local _CFrame2 = CFrame
-    local t25 = {
+    local tbl22 = {
 		false,
-		v1(t24)
+		unpackValues(tbl21)
 	}
-    local t26 = {
+    local tbl23 = {
 		false,
 		false,
 		_CFrame2.new(-394, 135, 5981)
 	}
-    local t27 = {
+    local tbl24 = {
 		false,
 		false,
 		CFrame.new(-13510, 584, -6986)
 	}
-    local t28 = {
+    local tbl25 = {
 		false,
 		false,
 		CFrame.new(400, 81, -12257)
 	}
-    local t29 = {
+    local tbl26 = {
 		false,
 		false,
 		CFrame.new(6689, 378, 331)
 	}
-    local t30 = {
-		["Angel Wings"] = t17,
-		["Leather + Scrap Metal"] = t18,
-		["Magma Ore"] = t20,
-		["Fish Tail"] = t21,
-		["Mystic Droplet"] = t22,
-		["Radiactive Material"] = t23,
-		["Vampire Fang"] = t25,
-		Gunpowder = t26,
-		["Mini Tusk"] = t27,
-		["Conjured Cocoa"] = t28,
-		["Dragon Scale"] = t29
+    local tbl27 = {
+		["Angel Wings"] = tbl14,
+		["Leather + Scrap Metal"] = tbl15,
+		["Magma Ore"] = tbl17,
+		["Fish Tail"] = tbl18,
+		["Mystic Droplet"] = tbl19,
+		["Radiactive Material"] = tbl20,
+		["Vampire Fang"] = tbl22,
+		Gunpowder = tbl23,
+		["Mini Tusk"] = tbl24,
+		["Conjured Cocoa"] = tbl25,
+		["Dragon Scale"] = tbl26
 	}
-    local t31 = {
+    local tbl28 = {
 		["Leather + Scrap Metal"] = {
 			{
 				"Pirate",
@@ -903,429 +896,429 @@ function Managers.FarmManager()
 		}
 	}
 
-    function t15.ToolDebounce()
-        n4 = tick()
+    function tbl12.ToolDebounce()
+        num6 = tick()
     end
-    function t15.GotoTargetCFrame(p41)
-        MoveCharacter(p41)
+    function tbl12.GotoTargetCFrame(arg112)
+        MoveCharacter(arg112)
         EnableBuso()
         EquipTool()
     end
-    function t15.GetNextAxis(p42)
-        if tick() - p42.axisDebounce <= 0.4 then
-            return p42.nextAxis
+    function tbl12.GetNextAxis(self7)
+        if tick() - self7.axisDebounce <= 0.4 then
+            return self7.nextAxis
         end
 
-        local v534 = Vector3[not (math.random() <= 0.5) and "zAxis" or "xAxis"]
-        local v535 = math.random() <= 0.5 and v46.FarmDistance or -v46.FarmDistance
-        local v536 = Vector3.yAxis * 8
-        local v537 = v534 * v535 + v536
+        local val30 = Vector3[not (math.random() <= 0.5) and "zAxis" or "xAxis"]
+        local random2 = math.random() <= 0.5 and settings.FarmDistance or -settings.FarmDistance
+        local vector4 = Vector3.yAxis * 8
+        local val31 = val30 * random2 + vector4
 
-        p42.axisDebounce = tick()
-        p42.nextAxis = v537
+        self7.axisDebounce = tick()
+        self7.nextAxis = val31
 
-        return v537
+        return val31
     end
-    function t15.Mastery(_, p44, p45)
-        local Health = p45.Health
+    function tbl12.Mastery(_, arg212, arg37)
+        local Health = arg37.Health
 
         for _, child in ipairs(Enemies:GetChildren()) do
             if child.PrimaryPart then
                 local Humanoid = child:FindFirstChildOfClass("Humanoid")
-                local v545 = Humanoid
+                local val32 = Humanoid
 
                 if Humanoid then
-                    v545 = Humanoid.Health > 0 and Health >= Humanoid.Health
+                    val32 = Humanoid.Health > 0 and Health >= Humanoid.Health
                 end
 
-                if v545 then
+                if val32 then
                     Health = Humanoid.Health
-                    p45 = Humanoid
-                    p44 = child.PrimaryPart
+                    arg37 = Humanoid
+                    arg212 = child.PrimaryPart
                 end
             end
         end
 
-        local v546 = p44.CFrame + v46.FarmPos
-        local v547 = p45.Health / p45.MaxHealth * 100
-        local v548 = v547 <= v46.mHealth and v46.mTool or "Melee"
+        local val33 = arg212.CFrame + settings.FarmPos
+        local val34 = arg37.Health / arg37.MaxHealth * 100
+        local val35 = val34 <= settings.mHealth and settings.mTool or "Melee"
 
-        EquipTool(v548, true)
+        EquipTool(val35, true)
 
-        local p44Parent = p44.Parent
+        local p44Parent = arg212.Parent
 
-        u55:BringEnemies(p44Parent)
+        Module:BringEnemies(p44Parent)
         EnableBuso()
 
-        if LocalPlayer:DistanceFromCharacter(v546.Position) >= 2.5 then
-            MoveCharacter(v546)
+        if LocalPlayer:DistanceFromCharacter(val33.Position) >= 2.5 then
+            MoveCharacter(val33)
         end
 
-        local v550 = v547 <= v46.mHealth
+        local val36 = val34 <= settings.mHealth
 
-        if v550 then
-            v550 = LocalPlayer:DistanceFromCharacter(v546.Position) < 5
+        if val36 then
+            val36 = LocalPlayer:DistanceFromCharacter(val33.Position) < 5
         end
 
-        if v550 then
-            u55.Hooking:SetTarget(p44, p44.Parent, true)
-            u55.UseSkills(p44, v46.MasterySkills)
+        if val36 then
+            Module.Hooking:SetTarget(arg212, arg212.Parent, true)
+            Module.UseSkills(arg212, settings.MasterySkills)
         end
     end
-    function t15.attack(p46, p47, p48, p49)
-        local Humanoid = p46:FindFirstChild("Humanoid")
+    function tbl12.attack(arg113, arg213, arg38, arg43)
+        local Humanoid = arg113:FindFirstChild("Humanoid")
 
         if not Humanoid then
             return nil
         end
 
-        if v48.Mastery and Humanoid.MaxHealth < 40000 then
-            local PrimaryPart = p46.PrimaryPart
+        if enabledOptions.Mastery and Humanoid.MaxHealth < 40000 then
+            local PrimaryPart = arg113.PrimaryPart
 
-            t15:Mastery(PrimaryPart, Humanoid)
+            tbl12:Mastery(PrimaryPart, Humanoid)
 
             return true
         end
 
-        if p47 then
-            u55:BringEnemies(p46, p48)
+        if arg213 then
+            Module:BringEnemies(arg113, arg38)
         end
 
-        if tick() - n4 >= 1 then
+        if tick() - num6 >= 1 then
             EquipTool()
         end
 
         EnableBuso()
-        t15.FarmModes[p49 or v46.FarmMode](t15, p46.PrimaryPart, p49)
+        tbl12.FarmModes[arg43 or settings.FarmMode](tbl12, arg113.PrimaryPart, arg43)
 
-        local SmoothMode = v46.SmoothMode
+        local SmoothMode = settings.SmoothMode
 
         if SmoothMode then
-            SmoothMode = p49 or v46.FarmMode ~= "Orbit"
+            SmoothMode = arg43 or settings.FarmMode ~= "Orbit"
         end
 
         if SmoothMode then
             local elapsed = task.wait(0.1)
 
             if elapsed then
-                elapsed = IsAlive(p46)
+                elapsed = IsAlive(arg113)
 
                 if elapsed then
-                    elapsed = p46.PrimaryPart and v48[v46.RunningOption]
+                    elapsed = arg113.PrimaryPart and enabledOptions[settings.RunningOption]
                 end
             end
 
             if elapsed then
-                local v559 = v38
+                local val37 = _ENV
 
-                v46.RunningMethod = "Killing: " .. p46.Name
-                v559.OnFarm = true
-                t15.attack(p46, p47, p48, p49)
+                settings.RunningMethod = "Killing: " .. arg113.Name
+                val37.OnFarm = true
+                tbl12.attack(arg113, arg213, arg38, arg43)
             end
         end
 
         return true
     end
-    function t15.Material(p50, p51)
-        local v562 = t30[p51] and t30[p51][u55.GameData.Sea]
-        local v563 = t31[p51]
+    function tbl12.Material(self8, arg214)
+        local val38 = tbl27[arg214] and tbl27[arg214][Module.GameData.Sea]
+        local val39 = tbl28[arg214]
 
-        if v563 then
-            local EnemyLocation = p50.EnemyLocation
-            local CanFarm = p50.CanFarm
+        if val39 then
+            local EnemyLocation = self8.EnemyLocation
+            local CanFarm = self8.CanFarm
 
-            if CanFarm[p51] == nil then
-                if v563[2][u55.GameData.Sea] then
-                    CanFarm[p51] = true
+            if CanFarm[arg214] == nil then
+                if val39[2][Module.GameData.Sea] then
+                    CanFarm[arg214] = true
                 else
-                    CanFarm[p51] = false
+                    CanFarm[arg214] = false
                 end
             end
 
-            if not CanFarm[p51] then
+            if not CanFarm[arg214] then
                 return nil
             end
 
-            if EnemyLocation[p51] == nil then
-                for _, v in ipairs(v563[1]) do
-                    local v568 = EnemyLocations[v]
+            if EnemyLocation[arg214] == nil then
+                for _, v in ipairs(val39[1]) do
+                    local val40 = EnemyLocations[v]
 
-                    if v568 and #v568 > 0 then
-                        EnemyLocation[p51] = v568
+                    if val40 and #val40 > 0 then
+                        EnemyLocation[arg214] = val40
                     end
                 end
 
-                if not EnemyLocation[p51] then
-                    EnemyLocation[p51] = false
+                if not EnemyLocation[arg214] then
+                    EnemyLocation[arg214] = false
                 end
             end
 
-            for _, v in ipairs(v563[1]) do
-                local v571 = EnemySpawned(v)
+            for _, v in ipairs(val39[1]) do
+                local result7 = EnemySpawned(v)
 
-                if v571 and v571.PrimaryPart then
-                    p50.attack(v571, true, true)
+                if result7 and result7.PrimaryPart then
+                    self8.attack(result7, true, true)
 
                     return "Killing: " .. v
                 end
             end
 
-            if EnemyLocation[p51] then
-                Managers.TweenManager:TweenToCFrameQueue(EnemyLocation[p51])
+            if EnemyLocation[arg214] then
+                Managers.TweenManager:TweenToCFrameQueue(EnemyLocation[arg214])
             else
-                MoveCharacter(v562)
+                MoveCharacter(val38)
             end
 
-            return "Farming Material: " .. p51
+            return "Farming Material: " .. arg214
         end
     end
-    function t15.GetNpcVectorCFrame(_, p53)
-        if t16[p53] then
-            return t16[p53]:GetPivot()
+    function tbl12.GetNpcVectorCFrame(_, arg215)
+        if tbl13[arg215] then
+            return tbl13[arg215]:GetPivot()
         end
 
-        local v574 = NPCs:FindFirstChild(p53) or ReplicatedStorage.NPCs:FindFirstChild(p53)
+        local found = NPCs:FindFirstChild(arg215) or ReplicatedStorage.NPCs:FindFirstChild(arg215)
 
-        if v574 then
-            t16[p53] = v574
+        if found then
+            tbl13[arg215] = found
 
-            return v574:GetPivot()
+            return found:GetPivot()
         end
     end
 
-    return t15
+    return tbl12
 end
 function Managers.RaidManager()
-    if u55.GameData.Sea ~= 2 and u55.GameData.Sea ~= 3 then
+    if Module.GameData.Sea ~= 2 and Module.GameData.Sea ~= 3 then
         return nil
     end
 
-    if u55.GameData.Sea ~= 2 then
+    if Module.GameData.Sea ~= 2 then
     end
 
     local cFrame = CFrame.new(-5033, 315, -2950)
     local Timer = LocalPlayer.PlayerGui:WaitForChild("Main").Timer
-    local v153 = if u55.GameData.Sea ~= 2 then u55.GameData.Sea == 3 and "Boat Castle.RaidSummon2.Button.Main" else "CircleIsland.RaidSummon2.Button.Main"
+    local val41 = if Module.GameData.Sea ~= 2 then Module.GameData.Sea == 3 and "Boat Castle.RaidSummon2.Button.Main" else "CircleIsland.RaidSummon2.Button.Main"
 
     return {
 		RaidPosition = cFrame,
 		requests = {},
 		Require = 0,
 		Timer = Timer,
-		Button = v153,
+		Button = val41,
 		IsRaiding = function(_)
-        return v48.Raid and LocalPlayer:GetAttribute("IslandRaiding")
+        return enabledOptions.Raid and LocalPlayer:GetAttribute("IslandRaiding")
     end,
 		GetRaidIsland = function(_)
-        return u55:GetRaidIsland()
+        return Module:GetRaidIsland()
     end,
 		CanStartRaid = function(_)
         return Level.Value >= 1200 and VerifyTool("Special Microchip")
     end,
-		start = function(p57)
-        if not p57:IsRaiding() and p57:CanStartRaid() then
-            local parts = p57.Button:split(".")
-            local v580 = Map
+		start = function(arg114)
+        if not arg114:IsRaiding() and arg114:CanStartRaid() then
+            local parts = arg114.Button:split(".")
+            local val42 = Map
 
             for i = 1, #parts do
-                if v580 then
-                    v580 = v580:FindFirstChild(parts[i])
+                if val42 then
+                    val42 = val42:FindFirstChild(parts[i])
                 end
             end
 
-            if v580 and v580:FindFirstChild("ClickDetector") then
-                fireclickdetector(v580.ClickDetector)
+            if val42 and val42:FindFirstChild("ClickDetector") then
+                fireclickdetector(val42.ClickDetector)
                 task.wait(1)
 
                 return
             end
 
-            return MoveCharacter(p57.RaidPosition)
+            return MoveCharacter(arg114.RaidPosition)
         end
     end
 	}
 end
 function Managers.ItemsManager()
-    local t32 = {}
-    local Sea = u55.GameData.Sea
-    local IsSpawned = u55.Enemies.IsSpawned
-    local EnemySpawned = u55.EnemySpawned
-    local EnemyLocations = u55.EnemyLocations
-    local EquipTool = u55.EquipTool
-    local FireRemote = u55.FireRemote
-    local IsAlive = u55.IsAlive
-    local Count = u55.Inventory.Count
-    local Unlocked = u55.Inventory.Unlocked
+    local tbl29 = {}
+    local Sea = Module.GameData.Sea
+    local IsSpawned = Module.Enemies.IsSpawned
+    local EnemySpawned = Module.EnemySpawned
+    local EnemyLocations = Module.EnemyLocations
+    local EquipTool = Module.EquipTool
+    local FireRemote = Module.FireRemote
+    local IsAlive = Module.IsAlive
+    local Count = Module.Inventory.Count
+    local Unlocked = Module.Inventory.Unlocked
 
     if Sea == 3 then
-        t32.CursedDualKatana = {}
-        t32.SkullGuitar = {}
-        local u164
-        t32.DojoTrainer = {}
-        local u165
-        local u166
-        local u167
-        local u168
-        local u169
-        local u170
+        tbl29.CursedDualKatana = {}
+        tbl29.SkullGuitar = {}
+        local val43
+        tbl29.DojoTrainer = {}
+        local val44
+        local val45
+        local val46
+        local val47
+        local val48
+        local val49
         local cFrame = CFrame.new(5867, 1208, 872)
         local cFrame3 = CFrame.new(5771, 1209, 804)
-        local function v173()
-            if u165 and u165.Value > 0 then
-                return u165
+        local function helper6()
+            if val44 and val44.Value > 0 then
+                return val44
             end
 
             local huge = math.huge
 
-            u165 = nil
+            val44 = nil
 
             for _, child in ipairs(LocalPlayer.QuestHaze:GetChildren()) do
                 if child.Value > 0 then
                     local Position = child:GetAttribute("Position")
-                    local v589 = typeof(Position) == "Vector3" and LocalPlayer:DistanceFromCharacter(Position)
+                    local result8 = typeof(Position) == "Vector3" and LocalPlayer:DistanceFromCharacter(Position)
 
-                    if v589 and v589 <= huge then
-                        u165 = child
-                        huge = v589
+                    if result8 and result8 <= huge then
+                        val44 = child
+                        huge = result8
                     end
                 end
             end
 
-            return u165
+            return val44
         end
-        local function v174(p58, p59)
-            local v599 = not p59 and "Pedestal" or "Torch"
+        local function helper7(arg115, arg216)
+            local flag2 = not arg216 and "Pedestal" or "Torch"
 
             for i = 1, 3 do
-                local v601 = p58:FindFirstChild(v599 .. i)
-                local v602 = v601
+                local found2 = arg115:FindFirstChild(flag2 .. i)
+                local val50 = found2
 
-                if v601 then
-                    v602 = v601:FindFirstChild("ProximityPrompt") and v601.ProximityPrompt.Enabled
+                if found2 then
+                    val50 = found2:FindFirstChild("ProximityPrompt") and found2.ProximityPrompt.Enabled
                 end
 
-                if v602 then
-                    return v601
+                if val50 then
+                    return found2
                 end
             end
         end
-        function u170(p60)
+        function val49(arg116)
             local huge = math.huge
-            local v605
+            local val51
             for _, child in ipairs(ReplicatedStorage.NPCs:GetChildren()) do
-                local v608 = child.Name == "Luxury Boat Dealer"
+                local val52 = child.Name == "Luxury Boat Dealer"
 
-                if v608 then
-                    v608 = not p60[child] and child.PrimaryPart
+                if val52 then
+                    val52 = not arg116[child] and child.PrimaryPart
                 end
 
-                if v608 then
-                    local v609 = LocalPlayer:DistanceFromCharacter(child.PrimaryPart.Position)
+                if val52 then
+                    local distanceFromCharacterResult = LocalPlayer:DistanceFromCharacter(child.PrimaryPart.Position)
 
-                    if v609 <= huge then
-                        v605 = child
-                        huge = v609
+                    if distanceFromCharacterResult <= huge then
+                        val51 = child
+                        huge = distanceFromCharacterResult
                     end
                 end
             end
 
-            return v605
+            return val51
         end
-        function u164(p61, p62)
-            local v612 = v174(p61, true)
+        function val43(arg117, arg217)
+            local result9 = helper7(arg117, true)
 
-            if not v612 then
-                v612 = p61:FindFirstChild("Exit")
+            if not result9 then
+                result9 = arg117:FindFirstChild("Exit")
             end
 
-            local v613 = v612
+            local val53 = result9
 
-            if v612 then
-                v613 = LocalPlayer:DistanceFromCharacter(v612.Position) <= 1000
+            if result9 then
+                val53 = LocalPlayer:DistanceFromCharacter(result9.Position) <= 1000
             end
 
-            if v613 then
-                local v614 = EnemySpawned(p62)
+            if val53 then
+                local result10 = EnemySpawned(arg217)
 
-                if v614 and v614.PrimaryPart then
-                    local PrimaryPartCFrame = v614.PrimaryPart.CFrame
-                    local FarmPos = v46.FarmPos
+                if result10 and result10.PrimaryPart then
+                    local PrimaryPartCFrame = result10.PrimaryPart.CFrame
+                    local FarmPos = settings.FarmPos
 
                     MoveCharacter(PrimaryPartCFrame + FarmPos)
 
-                    return true, u55.KillAura(125)
+                    return true, Module.KillAura(125)
                 end
 
-                local v617 = v612.Name ~= "Exit"
+                local val54 = result9.Name ~= "Exit"
 
-                if v617 then
-                    v617 = LocalPlayer:DistanceFromCharacter(v612.Position) < 5
+                if val54 then
+                    val54 = LocalPlayer:DistanceFromCharacter(result9.Position) < 5
                 end
 
-                if v617 then
-                    fireproximityprompt(v612.ProximityPrompt)
+                if val54 then
+                    fireproximityprompt(result9.ProximityPrompt)
                 else
-                    MoveCharacter(v612.CFrame)
+                    MoveCharacter(result9.CFrame)
                 end
             end
 
             return true
         end
-        local CursedDualKatana = t32.CursedDualKatana
+        local CursedDualKatana = tbl29.CursedDualKatana
         CursedDualKatana.Tushita = {
-			function(p63, _)
+			function(arg118, _)
             if not LocalPlayer:FindFirstChild("BoatQuest") then
                 return
             end
 
-            if not u166 or p63.BoatsDealer[u166] then
-                local v592 = NPCs:FindFirstChild("Luxury Boat Dealer")
-                local v593 = not v592
+            if not val45 or arg118.BoatsDealer[val45] then
+                local luxuryBoatDealer = NPCs:FindFirstChild("Luxury Boat Dealer")
+                local flag3 = not luxuryBoatDealer
 
-                if not v593 then
-                    v593 = not v592.PrimaryPart or p63.BoatsDealer[v592]
+                if not flag3 then
+                    flag3 = not luxuryBoatDealer.PrimaryPart or arg118.BoatsDealer[luxuryBoatDealer]
                 end
 
-                if v593 then
-                    u166 = u170(p63.BoatsDealer)
+                if flag3 then
+                    val45 = val49(arg118.BoatsDealer)
                 else
-                    u166 = v592
+                    val45 = luxuryBoatDealer
                 end
             end
 
-            local v594 = u166 and u166.PrimaryPart
+            local val55 = val45 and val45.PrimaryPart
 
-            if v594 then
-                if LocalPlayer:DistanceFromCharacter(v594.Position) < 5 then
-                    if FireRemote("CDKQuest", "BoatQuest", u166, "Check") then
-                        FireRemote("CDKQuest", "BoatQuest", u166)
+            if val55 then
+                if LocalPlayer:DistanceFromCharacter(val55.Position) < 5 then
+                    if FireRemote("CDKQuest", "BoatQuest", val45, "Check") then
+                        FireRemote("CDKQuest", "BoatQuest", val45)
                     end
 
-                    p63.BoatsDealer[u166] = true
+                    arg118.BoatsDealer[val45] = true
 
                     return
                 end
 
-                return true, MoveCharacter(v594.CFrame)
+                return true, MoveCharacter(val55.CFrame)
             end
 
             task.wait(0.5)
         end,
-			function(_, p66)
-            return p66.PirateRaid()
+			function(_, arg218)
+            return arg218.PirateRaid()
         end,
-			function(p67, _)
+			function(arg119, _)
             if Map:FindFirstChild("HeavenlyDimension") then
-                return u164(Map.HeavenlyDimension, p67.Heaven)
+                return val43(Map.HeavenlyDimension, arg119.Heaven)
             end
 
             if IsSpawned("Cake Queen") then
-                local v584 = EnemySpawned("Cake Queen")
+                local result11 = EnemySpawned("Cake Queen")
 
-                if v584 and v584.PrimaryPart then
-                    Managers.FarmManager.attack(v584, true)
+                if result11 and result11.PrimaryPart then
+                    Managers.FarmManager.attack(result11, true)
                 else
-                    MoveCharacter(p67.CakeQueen)
+                    MoveCharacter(arg119.CakeQueen)
                 end
 
                 return true
@@ -1333,20 +1326,20 @@ function Managers.ItemsManager()
         end
 		}
         CursedDualKatana.Yama = {
-			function(p69, _)
+			function(arg120, _)
             if not VerifyTool("Yama") then
                 return FireRemote("LoadItem", "Yama")
             end
 
-            local v620 = EnemySpawned("Forest Pirate")
+            local result12 = EnemySpawned("Forest Pirate")
 
             EquipTool("Yama")
 
-            if v620 and v620.PrimaryPart then
-                u55.AttackCooldown = tick()
-                MoveCharacter(v620.PrimaryPart.CFrame * CFrame.new(0, 0, -2))
+            if result12 and result12.PrimaryPart then
+                Module.AttackCooldown = tick()
+                MoveCharacter(result12.PrimaryPart.CFrame * CFrame.new(0, 0, -2))
             else
-                MoveCharacter(p69.ForestPirate)
+                MoveCharacter(arg120.ForestPirate)
             end
 
             return true
@@ -1356,34 +1349,34 @@ function Managers.ItemsManager()
                 return
             end
 
-            local v626 = v173()
+            local result13 = helper6()
 
-            if v626 then
-                local Name = v626.Name
-                local v628 = EnemySpawned(Name)
+            if result13 then
+                local Name = result13.Name
+                local result14 = EnemySpawned(Name)
 
-                if v628 and v628.PrimaryPart then
-                    Managers.FarmManager.attack(v628, true)
+                if result14 and result14.PrimaryPart then
+                    Managers.FarmManager.attack(result14, true)
                 elseif EnemyLocations[Name] then
                     Managers.TweenManager:TweenToCFrameQueue(EnemyLocations[Name])
                 else
-                    MoveCharacter(v626:GetAttribute("Position"))
+                    MoveCharacter(result13:GetAttribute("Position"))
                 end
 
                 return true
             end
         end,
-			function(p73, p74)
+			function(arg121, arg219)
             if Map:FindFirstChild("HellDimension") then
-                return u164(Map.HellDimension, p73.Hell)
+                return val43(Map.HellDimension, arg121.Hell)
             end
 
             if IsSpawned("Soul Reaper") then
-                local v623 = EnemySpawned("Soul Reaper")
+                local result15 = EnemySpawned("Soul Reaper")
 
-                if v623 and v623.PrimaryPart then
-                    if LocalPlayer:DistanceFromCharacter(v623.PrimaryPart.Position) > 6 then
-                        MoveCharacter(v623.PrimaryPart.CFrame * CFrame.new(0, 0, -2))
+                if result15 and result15.PrimaryPart then
+                    if LocalPlayer:DistanceFromCharacter(result15.PrimaryPart.Position) > 6 then
+                        MoveCharacter(result15.PrimaryPart.CFrame * CFrame.new(0, 0, -2))
                     end
 
                     return true
@@ -1392,21 +1385,21 @@ function Managers.ItemsManager()
                 return
             end
 
-            return p74.SoulReaper() or p74.Bones()
+            return arg219.SoulReaper() or arg219.Bones()
         end
 		}
-        function CursedDualKatana.FinalQuest(p75, _)
+        function CursedDualKatana.FinalQuest(arg122, _)
             if not VerifyTool("Tushita") and not VerifyTool("Yama") then
                 return FireRemote("LoadItem", "Yama")
             end
 
             if IsSpawned("Cursed Skeleton Boss") then
-                local v631 = EnemySpawned("Cursed Skeleton Boss")
+                local result16 = EnemySpawned("Cursed Skeleton Boss")
 
-                if v631 and v631.PrimaryPart then
+                if result16 and result16.PrimaryPart then
                     EquipTool("Sword", true)
                     Managers.FarmManager.ToolDebounce()
-                    Managers.FarmManager.attack(v631, true)
+                    Managers.FarmManager.attack(result16, true)
 
                     return true
                 end
@@ -1418,71 +1411,71 @@ function Managers.ItemsManager()
                 VirtualUser:ClickButton1(Vector2.new(10000, 10000))
             end
 
-            local v632 = v174(Map.Turtle.Cursed)
+            local result17 = helper7(Map.Turtle.Cursed)
 
-            if v632 then
-                if LocalPlayer:DistanceFromCharacter(v632.Position) < 5 then
-                    fireproximityprompt(v632.ProximityPrompt)
+            if result17 then
+                if LocalPlayer:DistanceFromCharacter(result17.Position) < 5 then
+                    fireproximityprompt(result17.ProximityPrompt)
                 else
-                    MoveCharacter(v632.CFrame)
+                    MoveCharacter(result17.CFrame)
                 end
 
                 return true
             end
 
-            local v633 = LocalPlayer:DistanceFromCharacter(p75.CursedSkeleton[1].Position)
+            local distanceFromCharacterResult2 = LocalPlayer:DistanceFromCharacter(arg122.CursedSkeleton[1].Position)
 
-            if v633 > 6 then
-                MoveCharacter(p75.CursedSkeleton[1], v633 <= 100 and 40)
+            if distanceFromCharacterResult2 > 6 then
+                MoveCharacter(arg122.CursedSkeleton[1], distanceFromCharacterResult2 <= 100 and 40)
             else
-                MoveCharacter(p75.CursedSkeleton[2])
+                MoveCharacter(arg122.CursedSkeleton[2])
             end
 
             task.wait(0.5)
 
             return true
         end
-        local DojoTrainer = t32.DojoTrainer
-        local t33 = {
+        local DojoTrainer = tbl29.DojoTrainer
+        local tbl30 = {
 			NPC = "Dojo Trainer",
 			Command = "ClaimQuest"
 		}
-        local t34 = {
+        local tbl31 = {
 			NPC = "Dojo Trainer",
 			Command = "RequestQuest"
 		}
-        local t35 = {
+        local tbl32 = {
 			NPC = "Dragon Wizard",
 			Command = "Speak"
 		}
-        local t36 = {
+        local tbl33 = {
 			NPC = "Dragon Wizard",
 			Command = "DragonRace"
 		}
-        local t37 = {
+        local tbl34 = {
 			NPC = "Dragon Wizard",
 			Command = "LearnTether"
 		}
-        local t38 = {
+        local tbl35 = {
 			NPC = "Dragon Wizard",
 			Command = "Ascension",
 			Action = "Begin"
 		}
-        local t39 = {
+        local tbl36 = {
 			NPC = "Dragon Wizard",
 			Command = "Ascension",
 			Action = "Complete"
 		}
-        local v184 = CreateDictionary({ "Terrorshark" }, true)
-        local v185 = CreateDictionary({
+        local result18 = CreateDictionary({ "Terrorshark" }, true)
+        local result19 = CreateDictionary({
 			"Piranha",
 			"Shark"
 		}, true)
-        local v186 = CreateDictionary({ "Terrorshark" }, true)
-        local v187 = Net:WaitForChild("RF/InteractDragonQuest")
+        local result20 = CreateDictionary({ "Terrorshark" }, true)
+        local rFInteractDragonQuest = Net:WaitForChild("RF/InteractDragonQuest")
         DojoTrainer.Progress = {}
         DojoTrainer.BeltQuest = nil
-        local t40 = {
+        local tbl37 = {
 			White = 20,
 			Green = 360,
 			Purple = 3,
@@ -1491,114 +1484,114 @@ function Managers.ItemsManager()
 			Blue = 1,
 			Black = 3
 		}
-        local function v189(p77)
-            return p77.CraftVolcanicMagnet() or p77.FullyVolcano(true, true)
+        local function helper8(arg123)
+            return arg123.CraftVolcanicMagnet() or arg123.FullyVolcano(true, true)
         end
-        local function v190(p78)
-            local v636 = Unlocked["Dragon Egg"]
+        local function helper9(arg124)
+            local val56 = Unlocked["Dragon Egg"]
 
-            if not v636 then
-                v636 = u169.CanTransform or u169.CanTransformFree
+            if not val56 then
+                val56 = val48.CanTransform or val48.CanTransformFree
             end
 
-            if v636 then
-                return DojoTrainer:InteractWithNpcDraco(t36)
+            if val56 then
+                return DojoTrainer:InteractWithNpcDraco(tbl33)
             end
 
-            if not u169.TetherLearned then
-                return DojoTrainer:InteractWithNpcDraco(t37)
+            if not val48.TetherLearned then
+                return DojoTrainer:InteractWithNpcDraco(tbl34)
             end
 
-            return v189(p78)
+            return helper8(arg124)
         end
-        local function v191(p79, p80)
-            if p79 == "V2" or p79 == "V3" then
-                return DojoTrainer:InteractWithNpcDraco(t38)
+        local function helper10(arg125, arg220)
+            if arg125 == "V2" or arg125 == "V3" then
+                return DojoTrainer:InteractWithNpcDraco(tbl35)
             end
 
-            if p79 == "V2InProgress" then
+            if arg125 == "V2InProgress" then
                 if Count["Fire Flower"] >= 5 then
-                    return DojoTrainer:InteractWithNpcDraco(t39)
+                    return DojoTrainer:InteractWithNpcDraco(tbl36)
                 end
 
                 return "FireFlowers"
             end
 
-            if p79 == "V3InProgress" then
+            if arg125 == "V3InProgress" then
                 if DojoTrainer.DracoV3Completed then
-                    return DojoTrainer:InteractWithNpcDraco(t39)
+                    return DojoTrainer:InteractWithNpcDraco(tbl36)
                 end
 
-                return p80.Sea(v186, false)
+                return arg220.Sea(result20, false)
             end
 
-            if p79 == "V2TurnInReady" or p79 == "V3TurnInReady" then
-                if Data.Level.Value >= (p79 ~= "V3TurnInReady" and 1000000 or 3000000) then
-                    return self:InteractWithNpcDraco(t39)
+            if arg125 == "V2TurnInReady" or arg125 == "V3TurnInReady" then
+                if Data.Level.Value >= (arg125 ~= "V3TurnInReady" and 1000000 or 3000000) then
+                    return self:InteractWithNpcDraco(tbl36)
                 end
 
-                return p80.Level()
+                return arg220.Level()
             end
         end
-        function DojoTrainer.BeltWhite(_, p82)
-            return p82.Level()
+        function DojoTrainer.BeltWhite(_, arg221)
+            return arg221.Level()
         end
-        function DojoTrainer.BeltGreen(p83)
-            if LocalPlayer:GetAttribute("DangerLevel") >= 600 and p83.GreenTimer then
-                p83.Progress.Green = p83.Progress.Green + (tick() - p83.GreenTimer)
+        function DojoTrainer.BeltGreen(arg126)
+            if LocalPlayer:GetAttribute("DangerLevel") >= 600 and arg126.GreenTimer then
+                arg126.Progress.Green = arg126.Progress.Green + (tick() - arg126.GreenTimer)
             end
 
-            p83.GreenTimer = tick()
+            arg126.GreenTimer = tick()
 
             return Managers.SeaManager:DriveBoat("inf")
         end
-        function DojoTrainer.BeltPurple(p84, p85)
-            if not p84.PurpleProgress then
-                p84.StartPurpleProgress = p84.Progress.Purple
-                p84.PurpleProgress = u55:GetProgress("EliteProgress", "EliteHunter", "Progress")
+        function DojoTrainer.BeltPurple(arg127, arg222)
+            if not arg127.PurpleProgress then
+                arg127.StartPurpleProgress = arg127.Progress.Purple
+                arg127.PurpleProgress = Module:GetProgress("EliteProgress", "EliteHunter", "Progress")
 
                 return
             end
 
-            if not p85.EliteHunter() then
-                p84.Progress.Purple = p84.StartPurpleProgress + (u55:GetProgress("EliteProgress", "EliteHunter", "Progress") - p84.PurpleProgress)
+            if not arg222.EliteHunter() then
+                arg127.Progress.Purple = arg127.StartPurpleProgress + (Module:GetProgress("EliteProgress", "EliteHunter", "Progress") - arg127.PurpleProgress)
 
                 return
             end
 
             return true
         end
-        function DojoTrainer.BeltRed(_, p87)
-            return p87.Sea(v184, false)
+        function DojoTrainer.BeltRed(_, arg223)
+            return arg223.Sea(result18, false)
         end
-        function DojoTrainer.BeltYellow(_, p89)
-            return p89.Sea(v185, false)
+        function DojoTrainer.BeltYellow(_, arg224)
+            return arg224.Sea(result19, false)
         end
-        function DojoTrainer.BeltBlue(p90, p91)
+        function DojoTrainer.BeltBlue(arg128, arg225)
             if not IsAlive(LocalPlayer.Character) then
                 return
             end
 
-            local v650 = u167
+            local val57 = val46
 
-            if v650 then
-                v650 = u167.Parent == LocalPlayer.Character or u167.Parent == LocalPlayer.Backpack
+            if val57 then
+                val57 = val46.Parent == LocalPlayer.Character or val46.Parent == LocalPlayer.Backpack
             end
 
-            if v650 then
-                p90.Progress.Blue = 1
-            elseif u167 and u167.Parent ~= workspace then
-                u167 = nil
+            if val57 then
+                arg128.Progress.Blue = 1
+            elseif val46 and val46.Parent ~= workspace then
+                val46 = nil
             end
 
-            if u167 then
-                return p91.Fruits(u167)
+            if val46 then
+                return arg225.Fruits(val46)
             end
 
             local Tool = workspace:FindFirstChildOfClass("Tool")
 
             if Tool and Tool:GetAttribute("DroppedBy") ~= LocalPlayer.Name then
-                u167 = Tool
+                val46 = Tool
 
                 return
             end
@@ -1607,79 +1600,79 @@ function Managers.ItemsManager()
                 Tool.Parent = Map
             end
         end
-        function DojoTrainer.BeltBlack(p92, p93)
-            if not p92.BlackProgress then
-                p92.BlackProgress = p92.Progress.Black - Count["Dinosaur Bones"]
+        function DojoTrainer.BeltBlack(arg129, arg226)
+            if not arg129.BlackProgress then
+                arg129.BlackProgress = arg129.Progress.Black - Count["Dinosaur Bones"]
 
                 return
             end
 
-            p92.Progress.Black = Count["Dinosaur Bones"] - p92.BlackProgress
+            arg129.Progress.Black = Count["Dinosaur Bones"] - arg129.BlackProgress
 
-            return v189(p93)
+            return helper8(arg226)
         end
-        function DojoTrainer.CollectBeltReward(p94, p95)
-            if Unlocked["Dojo Belt (" .. p95 .. ")"] then
-                p94.Progress[p95] = nil
+        function DojoTrainer.CollectBeltReward(self9, arg227)
+            if Unlocked["Dojo Belt (" .. arg227 .. ")"] then
+                self9.Progress[arg227] = nil
 
                 return false
             end
 
             if LocalPlayer:DistanceFromCharacter(cFrame.Position) <= 5 then
-                v187:InvokeServer(t33)
+                rFInteractDragonQuest:InvokeServer(tbl30)
             else
                 MoveCharacter(cFrame)
             end
 
             return true
         end
-        function DojoTrainer.UpdateBeltProgress(p96, p97, p98)
-            if p97 == p96.BeltQuest then
-                p96.Progress[p97] = (p96.Progress[p97] or 0) + p98
+        function DojoTrainer.UpdateBeltProgress(self10, arg228, arg39)
+            if arg228 == self10.BeltQuest then
+                self10.Progress[arg228] = (self10.Progress[arg228] or 0) + arg39
 
                 return
             end
 
-            local v659 = p97 == "Red"
+            local val58 = arg228 == "Red"
 
-            if v659 then
-                v659 = u169 and u169.AvailableVQuest == "V3InProgress"
+            if val58 then
+                val58 = val48 and val48.AvailableVQuest == "V3InProgress"
             end
 
-            if v659 then
-                p96.DracoV3Completed = true
+            if val58 then
+                self10.DracoV3Completed = true
             end
         end
-        function DojoTrainer.GetBelt(p99, p100, p101)
-            local BeltName = p100.BeltName
-            local v664 = p99["Belt" .. BeltName]
+        function DojoTrainer.GetBelt(self11, arg229, arg310)
+            local BeltName = arg229.BeltName
+            local val59 = self11["Belt" .. BeltName]
 
-            if not v664 then
+            if not val59 then
                 return false
             end
 
             if Unlocked["Dojo Belt (" .. BeltName .. ")"] then
-                return p99:InteractWithDojoTrainer()
+                return self11:InteractWithDojoTrainer()
             end
 
-            if not p99.Progress[BeltName] or not p100.UpdatedProgress then
-                p99.Progress[BeltName] = p100.Progress
-                p100.UpdatedProgress = true
+            if not self11.Progress[BeltName] or not arg229.UpdatedProgress then
+                self11.Progress[BeltName] = arg229.Progress
+                arg229.UpdatedProgress = true
             end
 
-            if p99.Progress[BeltName] >= t40[BeltName] then
-                return p99:CollectBeltReward(BeltName)
+            if self11.Progress[BeltName] >= tbl37[BeltName] then
+                return self11:CollectBeltReward(BeltName)
             end
 
-            p99.BeltQuest = BeltName
+            self11.BeltQuest = BeltName
 
-            if v664(p99, p101) then
+            if val59(self11, arg310) then
                 return "Belt Quest: " .. BeltName
             end
         end
         function DojoTrainer.InteractWithDojoTrainer(_)
             if LocalPlayer:DistanceFromCharacter(cFrame.Position) <= 5 then
-                u168 = v187:InvokeServer(t34)
+                val47 = rFInteractDragonQuest:InvokeServer(tbl31)
             else
                 MoveCharacter(cFrame)
             end
@@ -1688,17 +1681,17 @@ function Managers.ItemsManager()
         end
         function DojoTrainer.InteractWithDragonWizard(_)
             if LocalPlayer:DistanceFromCharacter(cFrame3.Position) <= 5 then
-                u169 = v187:InvokeServer(t35)
+                val48 = rFInteractDragonQuest:InvokeServer(tbl32)
             else
                 MoveCharacter(cFrame3)
             end
 
             return "Getting Draco Quest"
         end
-        function DojoTrainer.InteractWithNpcDraco(_, p105)
+        function DojoTrainer.InteractWithNpcDraco(_, arg230)
             if LocalPlayer:DistanceFromCharacter(cFrame3.Position) <= 5 then
-                if v187:InvokeServer(p105) then
-                    u169 = nil
+                if rFInteractDragonQuest:InvokeServer(arg230) then
+                    val48 = nil
                 end
             else
                 MoveCharacter(cFrame3)
@@ -1706,64 +1699,64 @@ function Managers.ItemsManager()
 
             return true
         end
-        function DojoTrainer.Train(p106, p107)
-            if type(u168) == "table" then
-                if u168.Timeout or u168.Completed then
+        function DojoTrainer.Train(self12, arg231)
+            if type(val47) == "table" then
+                if val47.Timeout or val47.Completed then
                     return nil
                 end
 
-                if u168.Quest then
-                    return p106:GetBelt(u168.Quest, p107)
+                if val47.Quest then
+                    return self12:GetBelt(val47.Quest, arg231)
                 end
 
                 return
             end
 
-            return p106:InteractWithDojoTrainer()
+            return self12:InteractWithDojoTrainer()
         end
-        function DojoTrainer.EvoDracoRace(p108, p109)
+        function DojoTrainer.EvoDracoRace(self13, arg232)
             if not Unlocked["Dojo Belt (Black)"] then
-                return p109.DojoTrainer()
+                return arg232.DojoTrainer()
             end
 
-            if type(u169) ~= "table" then
-                return p108:InteractWithDragonWizard()
+            if type(val48) ~= "table" then
+                return self13:InteractWithDragonWizard()
             end
 
-            if not u169.TetherLearned and not u169.CanLearnTether then
+            if not val48.TetherLearned and not val48.CanLearnTether then
                 return false
             end
 
-            if not u169.FoundPrehistoric then
-                return v189(p109)
+            if not val48.FoundPrehistoric then
+                return helper8(arg232)
             end
 
             if Data.Race.Value ~= "Draco" then
-                return v190(p109)
+                return helper9(arg232)
             end
 
-            if u169.AvailableVQuest then
-                return v191(u169.AvailableVQuest, p109)
+            if val48.AvailableVQuest then
+                return helper10(val48.AvailableVQuest, arg232)
             end
         end
-        local _ = t32.SkullGuitar
+        local _ = tbl29.SkullGuitar
     end
 
-    return t32
+    return tbl29
 end
 function Managers.EspManager()
-    local t41 = {}
+    local tbl38 = {}
 
-    t41.__index = t41
+    tbl38.__index = tbl38
 
-    function t41.__newindex(p110, p111, p112)
-        if p111 == "Enabled" then
-            task.spawn(p110.ToggleEsp, p110, p112)
+    function tbl38.__newindex(arg130, arg233, arg311)
+        if arg233 == "Enabled" then
+            task.spawn(arg130.ToggleEsp, arg130, arg311)
 
             return
         end
 
-        rawset(p110, p111, p112)
+        rawset(arg130, arg233, arg311)
     end
 
     local Folder = Instance.new("Folder", CoreGui)
@@ -1777,14 +1770,14 @@ function Managers.EspManager()
     end
 
     local BoxHandleAdornment = Instance.new("BoxHandleAdornment")
-    local v197 = BoxHandleAdornment
+    local val60 = BoxHandleAdornment
 
-    v197.Size = Vector3.new(1, 0, 1, 0)
-    v197.AlwaysOnTop = true
-    v197.ZIndex = 10
-    v197.Transparency = 0
+    val60.Size = Vector3.new(1, 0, 1, 0)
+    val60.AlwaysOnTop = true
+    val60.ZIndex = 10
+    val60.Transparency = 0
 
-    local BillboardGui = Instance.new("BillboardGui", v197)
+    local BillboardGui = Instance.new("BillboardGui", val60)
 
     BillboardGui.Size = UDim2.new(0, 100, 0, 150)
     BillboardGui.StudsOffset = Vector3.new(0, 2, 0)
@@ -1803,236 +1796,236 @@ function Managers.EspManager()
     TextLabel.RichText = true
 
     local color3 = Color3.fromRGB(255, 255, 255)
-    local t42 = {}
+    local tbl39 = {}
 
-    local function v202(p113)
-        if p113:IsA("BasePart") then
-            return p113
+    local function helper11(arg131)
+        if arg131:IsA("BasePart") then
+            return arg131
         end
 
-        if p113:IsA("Model") then
-            return p113.PrimaryPart or p113:GetPivot()
+        if arg131:IsA("Model") then
+            return arg131.PrimaryPart or arg131:GetPivot()
         end
 
-        if p113.Parent:IsA("Model") then
-            return p113.Parent.PrimaryPart or p113.Parent:GetPivot()
+        if arg131.Parent:IsA("Model") then
+            return arg131.Parent.PrimaryPart or arg131.Parent:GetPivot()
         end
     end
 
-    function t41.SetCustomEspDisplay(p114, p115)
-        p114.CustomEspDisplay = p115
+    function tbl38.SetCustomEspDisplay(self14, arg234)
+        self14.CustomEspDisplay = arg234
 
-        return p114
+        return self14
     end
-    function t41.SetObjects(p116, p117)
-        p116.GetObjectsAction = p117
+    function tbl38.SetObjects(self15, arg235)
+        self15.GetObjectsAction = arg235
 
-        return p116
+        return self15
     end
-    function t41.GetInstance(p118, p119)
-        p118.OnlyOneInstanceAction = p119
+    function tbl38.GetInstance(self16, arg236)
+        self16.OnlyOneInstanceAction = arg236
 
-        return p118
+        return self16
     end
-    function t41.SetInstanceName(p120, p121, p122)
-        p120.EspsNames[p121] = p122
+    function tbl38.SetInstanceName(self17, arg237, arg312)
+        self17.EspsNames[arg237] = arg312
 
-        return p120
+        return self17
     end
-    function t41.SetAllInstancesName(p123, p124)
-        p123.CustomInstanceName = p124
+    function tbl38.SetAllInstancesName(arg132, arg238)
+        arg132.CustomInstanceName = arg238
 
-        return p123
+        return arg132
     end
-    function t41.WaitChildsAdded(p125)
-        p125._WaitChildsAdded = true
+    function tbl38.WaitChildsAdded(self18)
+        self18._WaitChildsAdded = true
 
-        return p125
+        return self18
     end
-    function t41.SetEspColor(p126, p127)
-        p126.EspColor = p127
+    function tbl38.SetEspColor(self19, arg239)
+        self19.EspColor = arg239
 
-        return p126
+        return self19
     end
-    function t41.SetAlwaysValidate(p128)
-        p128.AlwaysValidateInstance = true
+    function tbl38.SetAlwaysValidate(self20)
+        self20.AlwaysValidateInstance = true
 
-        return p128
+        return self20
     end
-    function t41.Validator(p129, p130)
-        p129.ValidateInstance = p130
+    function tbl38.Validator(self21, arg240)
+        self21.ValidateInstance = arg240
 
-        return p129
+        return self21
     end
-    function t41.ChangeEspSize(p131, p132)
-        p131.EspSize = p132
+    function tbl38.ChangeEspSize(self22, arg241)
+        self22.EspSize = arg241
 
-        for i = 1, #t42 do
-            for _, v in pairs(t42[i].EspObjects) do
-                v.BoxHandleAdornment.BillboardGui.TextLabel.TextSize = p132
+        for i = 1, #tbl39 do
+            for _, v in pairs(tbl39[i].EspObjects) do
+                v.BoxHandleAdornment.BillboardGui.TextLabel.TextSize = arg241
             end
         end
 
-        return p131
+        return self22
     end
-    function t41.StartRunningEsp(p133, p134)
-        local Instance2 = p134.Instance
-        local BoxHandleAdornment2 = p134.BoxHandleAdornment
+    function tbl38.StartRunningEsp(arg133, arg242)
+        local Instance2 = arg242.Instance
+        local BoxHandleAdornment2 = arg242.BoxHandleAdornment
         local TextLabel2 = BoxHandleAdornment2.BillboardGui.TextLabel
-        local _ = p133.EspFolder
-        local v705 = Instance2:IsA("Model")
-        local v706
-        while task.wait(not v46.SmoothMode and 0 or 0.25) do
+        local _ = arg133.EspFolder
+        local isAResult = Instance2:IsA("Model")
+        local val61
+        while task.wait(not settings.SmoothMode and 0 or 0.25) do
             if not BoxHandleAdornment2 or not BoxHandleAdornment2.Parent then
-                return p133:Clear(p134)
+                return arg133:Clear(arg242)
             end
 
-            if p133.AlwaysValidateInstance and not p133.ValidateInstance(Instance2) then
-                return p133:Clear(p134)
+            if arg133.AlwaysValidateInstance and not arg133.ValidateInstance(Instance2) then
+                return arg133:Clear(arg242)
             end
 
             if not Instance2:IsDescendantOf(workspace) and not Instance2:IsDescendantOf(ReplicatedStorage) then
-                return p133:Clear(p134)
+                return arg133:Clear(arg242)
             end
 
-            v706 = v706 or v202(Instance2)
+            val61 = val61 or helper11(Instance2)
 
-            if not v706 then
-                return p133:Clear(p134)
+            if not val61 then
+                return arg133:Clear(arg242)
             end
 
-            local v707 = math.floor(LocalPlayer:DistanceFromCharacter(v706.Position) / 5)
-            local v708 = v705 and Instance2:FindFirstChildOfClass("Humanoid")
+            local floor5 = math.floor(LocalPlayer:DistanceFromCharacter(val61.Position) / 5)
+            local val62 = isAResult and Instance2:FindFirstChildOfClass("Humanoid")
 
-            if v708 then
-                TextLabel2.Text = ("%s<font color='rgb(160, 160, 160)'> [ %im ]</font>\n<font color='rgb(25, 240, 25)'>[%i/%i]</font>"):format(Instance2.Name, v707, math.floor(v708.Health), (math.floor(v708.MaxHealth)))
-            elseif p133.CustomEspDisplay then
-                TextLabel2.Text = p133.CustomEspDisplay(Instance2, v707)
+            if val62 then
+                TextLabel2.Text = ("%s<font color='rgb(160, 160, 160)'> [ %im ]</font>\n<font color='rgb(25, 240, 25)'>[%i/%i]</font>"):format(Instance2.Name, floor5, math.floor(val62.Health), (math.floor(val62.MaxHealth)))
+            elseif arg133.CustomEspDisplay then
+                TextLabel2.Text = arg133.CustomEspDisplay(Instance2, floor5)
             else
-                local CustomInstanceName = p133.CustomInstanceName
+                local CustomInstanceName = arg133.CustomInstanceName
 
                 if not CustomInstanceName then
-                    CustomInstanceName = p133.EspsNames[Instance2] or Instance2.Name
+                    CustomInstanceName = arg133.EspsNames[Instance2] or Instance2.Name
                 end
 
-                TextLabel2.Text = ("%s < %i >").format("%s < %i >", CustomInstanceName, v707)
+                TextLabel2.Text = ("%s < %i >").format("%s < %i >", CustomInstanceName, floor5)
             end
         end
     end
-    function t41.Create(p135, p136)
-        if p135.EspObjects[p136] then
+    function tbl38.Create(self23, arg243)
+        if self23.EspObjects[arg243] then
             return
         end
 
-        local t43 = {
-			Instance = p136,
+        local tbl40 = {
+			Instance = arg243,
 			BoxHandleAdornment = nil
 		}
         local clone = BoxHandleAdornment:Clone()
         local BillboardGui2 = clone.BillboardGui
         local TextLabel3 = BillboardGui2.TextLabel
 
-        BillboardGui2.Adornee = p136:IsA("BasePart") or (p136:IsA("Model") and p136 or p136.Parent)
+        BillboardGui2.Adornee = arg243:IsA("BasePart") or (arg243:IsA("Model") and arg243 or arg243.Parent)
 
-        local v716 = type(p135.EspColor) == "function" and p135.EspColor(p136)
+        local result21 = type(self23.EspColor) == "function" and self23.EspColor(arg243)
 
-        if not v716 then
-            v716 = p135.EspColor or color3
+        if not result21 then
+            result21 = self23.EspColor or color3
         end
 
-        TextLabel3.TextColor3 = v716
-        TextLabel3.Text = p135.CustomInstanceName or "..."
-        TextLabel3.TextSize = p135.EspSize or TextLabel3.TextSize
-        clone.Parent = p135.EspFolder
-        p135.EspObjects[p136] = t43
-        t43.BoxHandleAdornment = clone
-        task.spawn(p135.StartRunningEsp, p135, t43)
+        TextLabel3.TextColor3 = result21
+        TextLabel3.Text = self23.CustomInstanceName or "..."
+        TextLabel3.TextSize = self23.EspSize or TextLabel3.TextSize
+        clone.Parent = self23.EspFolder
+        self23.EspObjects[arg243] = tbl40
+        tbl40.BoxHandleAdornment = clone
+        task.spawn(self23.StartRunningEsp, self23, tbl40)
 
-        return t43
+        return tbl40
     end
-    function t41.Clear(p137, p138)
-        if p138 then
-            p137.EspObjects[p138.Instance] = nil
+    function tbl38.Clear(self24, arg244)
+        if arg244 then
+            self24.EspObjects[arg244.Instance] = nil
 
-            if p138.BoxHandleAdornment then
-                p138.BoxHandleAdornment:Destroy()
+            if arg244.BoxHandleAdornment then
+                arg244.BoxHandleAdornment:Destroy()
 
                 return
             end
         else
-            table.clear(p137.EspObjects)
-            p137.EspFolder:ClearAllChildren()
+            table.clear(self24.EspObjects)
+            self24.EspFolder:ClearAllChildren()
         end
     end
-    function t41.ToggleEsp(p139, p140)
-        local v721 = "redzHub_Esp_" .. p139.SpecialTag
+    function tbl38.ToggleEsp(arg134, arg245)
+        local str = "redzHub_Esp_" .. arg134.SpecialTag
 
-        v38[v721] = p140
+        _ENV[str] = arg245
 
-        if not p140 then
-            return p139:Clear()
+        if not arg245 then
+            return arg134:Clear()
         end
 
-        while v38[v721] do
-            local GetObjectsAction = p139.GetObjectsAction
+        while _ENV[str] do
+            local GetObjectsAction = arg134.GetObjectsAction
 
-            if p139.OnlyOneInstanceAction then
-                local v723 = p139.OnlyOneInstanceAction()
+            if arg134.OnlyOneInstanceAction then
+                local result22 = arg134.OnlyOneInstanceAction()
 
-                if v723 then
-                    p139:Create(v723)
+                if result22 then
+                    arg134:Create(result22)
                 end
             elseif GetObjectsAction then
-                local v724 = typeof(GetObjectsAction) == "Instance" and GetObjectsAction:GetChildren() or GetObjectsAction
-                local ValidateInstance = p139.ValidateInstance
-                local EspObjects = p139.EspObjects
+                local result23 = typeof(GetObjectsAction) == "Instance" and GetObjectsAction:GetChildren() or GetObjectsAction
+                local ValidateInstance = arg134.ValidateInstance
+                local EspObjects = arg134.EspObjects
 
-                for i = 1, #v724 do
-                    local v728 = v724[i]
-                    local v729 = not EspObjects[v728]
+                for i = 1, #result23 do
+                    local val63 = result23[i]
+                    local flag4 = not EspObjects[val63]
 
-                    if v729 then
-                        v729 = not ValidateInstance or ValidateInstance(v728)
+                    if flag4 then
+                        flag4 = not ValidateInstance or ValidateInstance(val63)
                     end
 
-                    if v729 then
-                        p139:Create(v728)
+                    if flag4 then
+                        arg134:Create(val63)
                     end
                 end
             end
 
-            if not CreatedNew and p139._WaitChildsAdded then
+            if not CreatedNew and arg134._WaitChildsAdded then
                 GetObjectsAction.ChildAdded:Wait()
             end
 
             task.wait(0.25)
         end
     end
-    function t41.new(p141)
+    function tbl38.new(arg135)
         local Folder2 = Instance.new("Folder", Folder)
 
-        Folder2.Name = p141
+        Folder2.Name = arg135
 
-        local v732 = setmetatable({
-			SpecialTag = p141,
+        local proxy = setmetatable({
+			SpecialTag = arg135,
 			EspObjects = {},
 			EspsNames = {},
 			EspFolder = Folder2
-		}, t41)
+		}, tbl38)
 
-        table.insert(t42, v732)
+        table.insert(tbl39, proxy)
 
-        return v732
+        return proxy
     end
 
-    return t41
+    return tbl38
 end
 function Managers.SeaManager()
-    if u55.GameData.Sea == 1 then
+    if Module.GameData.Sea == 1 then
         return
     end
 
-    local t44 = {
+    local tbl41 = {
 		Weapons = {
 			"Melee",
 			"Blox Fruit",
@@ -2042,16 +2035,16 @@ function Managers.SeaManager()
 		Selected = "Melee",
 		Debounce = 0
 	}
-    local t45 = {
+    local tbl42 = {
 		CFrame.new(94, 10, 2951),
 		CFrame.new(-5288, 5, -701)
 	}
-    local t46 = {
+    local tbl43 = {
 		CFrame.new(-6123, 16, -2247),
 		CFrame.new(-16917, 9, 510)
 	}
-    local v206 = u55.GameData.Sea - 1
-    local t47 = {
+    local val64 = Module.GameData.Sea - 1
+    local tbl44 = {
 		MoveDebounce = 0,
 		NextNumber = 1,
 		MyBoat = nil,
@@ -2065,18 +2058,18 @@ function Managers.SeaManager()
 			"MarineGrandBrigade"
 		},
 		Spawns = ({
-			t45,
-			t46
-		})[v206]
+			tbl42,
+			tbl43
+		})[val64]
 	}
-    local t48 = {
+    local tbl45 = {
 		Vector3.new(1, 0, 0),
 		Vector3.new(0, 0, 1),
 		Vector3.new(-1, 0, 0),
 		Vector3.new(0, 0, -1),
 		Vector3.new(0, 0, 0)
 	}
-    local v209 = ({
+    local val65 = ({
 		{
 			CFrame.new(-43, 21, 5054),
 			CFrame.new(1744, 21, 4393),
@@ -2092,18 +2085,18 @@ function Managers.SeaManager()
 			["2"] = -26000,
 			["1"] = -22000
 		}
-	})[u55.GameData.Sea - 1]
-    local t49 = {
-		RandomWeapons = t44,
-		Boats = t47,
-		SeaBeastDirections = t48,
-		SeaPositions = v209
+	})[Module.GameData.Sea - 1]
+    local tbl46 = {
+		RandomWeapons = tbl41,
+		Boats = tbl44,
+		SeaBeastDirections = tbl45,
+		SeaPositions = val65
 	}
     local SubclassNetwork = Remotes:WaitForChild("SubclassNetwork")
 
-    if u55.GameData.Sea == 3 then
-        for k, v in pairs(t49.SeaPositions) do
-            t49.SeaPositions[k] = {
+    if Module.GameData.Sea == 3 then
+        for k, v in pairs(tbl46.SeaPositions) do
+            tbl46.SeaPositions[k] = {
 				CFrame.new(v, 19, 500),
 				CFrame.new(v - 3000, 19, 500),
 				CFrame.new(v - 3000, 19, 2000),
@@ -2112,186 +2105,186 @@ function Managers.SeaManager()
         end
     end
 
-    local IsAlive = u55.IsAlive
-    local FireRemote = u55.FireRemote
-    local Count = u55.Inventory.Count
-    local _ = u55.Inventory.Unlocked
-    local UseSkills = u55.UseSkills
-    local EquipTool = u55.EquipTool
-    local Tween = u55.Tween
-    local Sea = u55.GameData.Sea
-    local u222 = false
-    local v223 = Vector3.yAxis * 40
-    local v224 = Vector3.yAxis * 20
-    local n6 = 0
-    local n7 = 1
+    local IsAlive = Module.IsAlive
+    local FireRemote = Module.FireRemote
+    local Count = Module.Inventory.Count
+    local _ = Module.Inventory.Unlocked
+    local UseSkills = Module.UseSkills
+    local EquipTool = Module.EquipTool
+    local Tween = Module.Tween
+    local Sea = Module.GameData.Sea
+    local flag5 = false
+    local vector5 = Vector3.yAxis * 40
+    local vector6 = Vector3.yAxis * 20
+    local num8 = 0
+    local num9 = 1
 
-    local function v227(p142)
-        if p142 then
-            p142 = not p142:FindFirstChild("Humanoid") or p142.Humanoid.Value > 0
+    local function helper12(arg136)
+        if arg136 then
+            arg136 = not arg136:FindFirstChild("Humanoid") or arg136.Humanoid.Value > 0
         end
 
-        return p142
+        return arg136
     end
-    local function v228(p143)
-        return p143:FindFirstChild("Owner") and p143.Owner.Value == LocalPlayer
+    local function helper13(arg137)
+        return arg137:FindFirstChild("Owner") and arg137.Owner.Value == LocalPlayer
     end
-    local function v229(p144)
-        if p144:GetAttribute("Repairing") then
+    local function helper14(arg138)
+        if arg138:GetAttribute("Repairing") then
             return
         end
 
         VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 1)
-        p144.AncestryChanged:Wait()
+        arg138.AncestryChanged:Wait()
         VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 1)
     end
-    local function v230(p145, p146)
-        if p146 <= tick() - n6 then
-            n6 = tick()
-            n7 = math.random(p145)
+    local function helper15(arg139, arg246)
+        if arg246 <= tick() - num8 then
+            num8 = tick()
+            num9 = math.random(arg139)
         end
 
-        return n7
+        return num9
     end
-    local function v231(p147, p148)
-        if u222 and u222.Position.Y > -2 then
+    local function helper16(arg140, arg247)
+        if flag5 and flag5.Position.Y > -2 then
             return true
         end
 
-        if p148.Position.Y > -2 then
-            u222 = p148
+        if arg247.Position.Y > -2 then
+            flag5 = arg247
 
             return true
         end
 
         for _, child in ipairs(Enemies:GetChildren()) do
-            if not (p147 == child.Name and IsAlive(child)) then
+            if not (arg140 == child.Name and IsAlive(child)) then
                 continue
             end
 
             local HumanoidRootPart = child:FindFirstChild("HumanoidRootPart")
-            local v743 = HumanoidRootPart
+            local val66 = HumanoidRootPart
 
             if HumanoidRootPart then
-                v743 = HumanoidRootPart.Position.Y > -2
+                val66 = HumanoidRootPart.Position.Y > -2
 
-                if v743 then
-                    v743 = LocalPlayer:DistanceFromCharacter(HumanoidRootPart.Position) <= 500
+                if val66 then
+                    val66 = LocalPlayer:DistanceFromCharacter(HumanoidRootPart.Position) <= 500
                 end
             end
 
-            if v743 then
-                u222 = HumanoidRootPart
+            if val66 then
+                flag5 = HumanoidRootPart
 
                 return true
             end
         end
     end
 
-    function t49.GetRandomWeapon(p149)
-        local RandomWeapons = p149.RandomWeapons
+    function tbl46.GetRandomWeapon(self25)
+        local RandomWeapons = self25.RandomWeapons
         local Debounce = RandomWeapons.Debounce
 
         if tick() - Debounce >= 2 then
             local Weapons = RandomWeapons.Weapons
-            local v748 = table.find(Weapons, RandomWeapons.Selected) + 1
-            local v749 = Weapons[v748] or Weapons[1]
+            local find2 = table.find(Weapons, RandomWeapons.Selected) + 1
+            local val67 = Weapons[find2] or Weapons[1]
 
-            while not VerifyToolTip(v749) do
-                v748 = ((if not (v748 > #Weapons) then v748 else 0)) + 1
-                v749 = RandomWeapons.Weapons[v748]
+            while not VerifyToolTip(val67) do
+                find2 = ((if not (find2 > #Weapons) then find2 else 0)) + 1
+                val67 = RandomWeapons.Weapons[find2]
             end
 
             local timestamp = tick()
 
-            RandomWeapons.Selected = v749
+            RandomWeapons.Selected = val67
             RandomWeapons.Debounce = timestamp
 
-            return v749
+            return val67
         end
 
         return RandomWeapons.Selected
     end
-    function t49.GetMyBoat(p150)
+    function tbl46.GetMyBoat(self26)
         if not IsAlive(LocalPlayer.Character) then
             return
         end
 
         local SeatPart = LocalPlayer.Character.Humanoid.SeatPart
-        local v753 = SeatPart
+        local val68 = SeatPart
 
         if SeatPart then
-            v753 = SeatPart.Name == "VehicleSeat" and v227(SeatPart.Parent)
+            val68 = SeatPart.Name == "VehicleSeat" and helper12(SeatPart.Parent)
         end
 
-        if v753 then
+        if val68 then
             return SeatPart.Parent, SeatPart.Parent.PrimaryPart
         end
 
-        local MyBoat = p150.Boats.MyBoat
-        local v755 = v227(MyBoat)
+        local MyBoat = self26.Boats.MyBoat
+        local result24 = helper12(MyBoat)
 
-        if v755 then
-            v755 = MyBoat.Parent
+        if result24 then
+            result24 = MyBoat.Parent
 
-            if v755 then
-                v755 = LocalPlayer:DistanceFromCharacter((MyBoat.PrimaryPart or MyBoat:GetPivot()).Position) <= 12000
+            if result24 then
+                result24 = LocalPlayer:DistanceFromCharacter((MyBoat.PrimaryPart or MyBoat:GetPivot()).Position) <= 12000
             end
         end
 
-        if v755 then
+        if result24 then
             return MyBoat, MyBoat.PrimaryPart
         end
 
         for _, child in ipairs(Boats:GetChildren()) do
-            local v758 = v228(child)
+            local result25 = helper13(child)
 
-            if v758 then
-                v758 = v227(child)
+            if result25 then
+                result25 = helper12(child)
 
-                if v758 then
-                    v758 = LocalPlayer:DistanceFromCharacter((child.PrimaryPart or child:GetPivot()).Position) <= 8000
+                if result25 then
+                    result25 = LocalPlayer:DistanceFromCharacter((child.PrimaryPart or child:GetPivot()).Position) <= 8000
                 end
             end
 
-            if v758 then
-                if child.Name ~= p150.Boats.SelectedBoat then
-                    p150.Boats.SelectedBoat = child.Name
+            if result25 then
+                if child.Name ~= self26.Boats.SelectedBoat then
+                    self26.Boats.SelectedBoat = child.Name
                 end
 
-                p150.Boats.MyBoat = child
+                self26.Boats.MyBoat = child
 
                 return child, child.PrimaryPart
             end
         end
     end
-    function t49.GetClosestBoatDealer(_, p152, p153)
-        if #p153 < 2 then
-            return p153[1]
+    function tbl46.GetClosestBoatDealer(_, arg248, arg313)
+        if #arg313 < 2 then
+            return arg313[1]
         end
-        local p152Position = p152.Position
-        local v763
+        local p152Position = arg248.Position
+        local val69
         local huge = math.huge
-        for _, v in ipairs(p153) do
+        for _, v in ipairs(arg313) do
             local Magnitude = (p152Position - v.Position).Magnitude
 
             if Magnitude < huge then
                 huge = Magnitude
-                v763 = v
+                val69 = v
             end
         end
 
-        return v763
+        return val69
     end
-    function t49.BuyNewBoat(p154)
+    function tbl46.BuyNewBoat(self27)
         if not IsAlive(LocalPlayer.Character) then
             return
         end
 
         local _ = LocalPlayer.Character.Humanoid
-        local SelectedBoat = p154.Boats.SelectedBoat
-        local OthersBoats = p154.Boats.OthersBoats
-        local ClosestBoatDealer = p154:GetClosestBoatDealer(LocalPlayer.Character:GetPivot(), p154.Boats.Spawns)
+        local SelectedBoat = self27.Boats.SelectedBoat
+        local OthersBoats = self27.Boats.OthersBoats
+        local ClosestBoatDealer = self27:GetClosestBoatDealer(LocalPlayer.Character:GetPivot(), self27.Boats.Spawns)
 
         if LocalPlayer:DistanceFromCharacter(ClosestBoatDealer.Position) >= 10 then
             return true, MoveCharacter(ClosestBoatDealer)
@@ -2307,23 +2300,23 @@ function Managers.SeaManager()
 
         return true
     end
-    function t49.RepairBoat(p155, p156)
-        if not p156 then
-            p156 = p155:GetMyBoat()
+    function tbl46.RepairBoat(self28, arg249)
+        if not arg249 then
+            arg249 = self28:GetMyBoat()
         end
 
-        if not IsAlive(LocalPlayer.Character) or not p156 then
+        if not IsAlive(LocalPlayer.Character) or not arg249 then
             return
         end
 
         local Character = LocalPlayer.Character
-        local Humanoid = p156.Humanoid
-        local GetAttribute = p156.GetAttribute
+        local Humanoid = arg249.Humanoid
+        local GetAttribute = arg249.GetAttribute
         local _RepairHammer = Character:FindFirstChild("_RepairHammer")
 
-        p156:SetAttribute("_Repairing", Humanoid.Value < (GetAttribute(p156, "MaxHealth") or Humanoid.Value))
+        arg249:SetAttribute("_Repairing", Humanoid.Value < (GetAttribute(arg249, "MaxHealth") or Humanoid.Value))
 
-        if not p156:GetAttribute("_Repairing") and _RepairHammer then
+        if not arg249:GetAttribute("_Repairing") and _RepairHammer then
             return true, SubclassNetwork.UseSubclass:InvokeServer({
 				Action = "RequestHammer"
 			})
@@ -2331,47 +2324,47 @@ function Managers.SeaManager()
 
         if _RepairHammer and _RepairHammer:WaitForChild("Marker") then
             local WorldCFrame = _RepairHammer.Marker.Value.WorldCFrame
-            local v780 = Vector3.xAxis * 10
+            local vector7 = Vector3.xAxis * 10
 
-            MoveCharacter(WorldCFrame + v780)
+            MoveCharacter(WorldCFrame + vector7)
 
-            return true, task.spawn(v229, _RepairHammer)
+            return true, task.spawn(helper14, _RepairHammer)
         end
 
-        if p156:FindFirstChild("VehicleSeat") then
-            local v781 = p156.VehicleSeat.CFrame + Vector3.yAxis * 20
+        if arg249:FindFirstChild("VehicleSeat") then
+            local val70 = arg249.VehicleSeat.CFrame + Vector3.yAxis * 20
 
-            if LocalPlayer:DistanceFromCharacter(v781.Position) <= 5 then
+            if LocalPlayer:DistanceFromCharacter(val70.Position) <= 5 then
                 SubclassNetwork.UseSubclass:InvokeServer({
 					Action = "RequestHammer"
 				})
             else
-                MoveCharacter(v781)
+                MoveCharacter(val70)
             end
         end
 
-        p155:StopMovingBoat(p156)
+        self28:StopMovingBoat(arg249)
 
         return true
     end
-    function t49.CanRepair(p157, p158)
-        if not p158 then
-            p158 = p157:GetMyBoat()
+    function tbl46.CanRepair(self29, arg250)
+        if not arg250 then
+            arg250 = self29:GetMyBoat()
         end
 
-        if v46.RepairBoat and p158 then
-            local Humanoid = p158.Humanoid
+        if settings.RepairBoat and arg250 then
+            local Humanoid = arg250.Humanoid
 
             if Subclass.Value ~= "Shipwright" or Count["Wooden Plank"] == 0 then
                 return false
             end
 
-            local _Repairing = p158:GetAttribute("_Repairing")
+            local _Repairing = arg250:GetAttribute("_Repairing")
 
             if not _Repairing then
-                local GetAttribute = p158.GetAttribute
+                local GetAttribute = arg250.GetAttribute
 
-                _Repairing = Humanoid.Value < (GetAttribute(p158, "MaxHealth") or Humanoid.Value / 1.2)
+                _Repairing = Humanoid.Value < (GetAttribute(arg250, "MaxHealth") or Humanoid.Value / 1.2)
             end
 
             if _Repairing then
@@ -2379,62 +2372,62 @@ function Managers.SeaManager()
             end
         end
     end
-    function t49.MoveBoat(p159, p160, p161, p162)
-        local Boats2 = p159.Boats
+    function tbl46.MoveBoat(self30, arg251, arg314, arg44)
+        local Boats2 = self30.Boats
 
         if tick() - Boats2.MoveDebounce >= 0.5 then
-            u55:RemoveBoatCollision(p160.Parent)
+            Module:RemoveBoatCollision(arg251.Parent)
 
-            local v792 = Tween
-            local Unit = (p161.Position - p160.Position).Unit
+            local val71 = Tween
+            local Unit = (arg314.Position - arg251.Position).Unit
 
-            if not p162 then
-                p162 = v46.BoatSpeed
+            if not arg44 then
+                arg44 = settings.BoatSpeed
             end
 
-            v792.Velocity = Unit * p162
+            val71.Velocity = Unit * arg44
             Boats2.MoveDebounce = tick()
         end
     end
-    function t49.GetCordinateCFrame(p163, p164, p165)
-        if not p164 and Sea == 3 then
-            p164 = v46.SeaLevel
+    function tbl46.GetCordinateCFrame(self31, arg252, arg315)
+        if not arg252 and Sea == 3 then
+            arg252 = settings.SeaLevel
         end
 
-        local v797 = p164 and p163.SeaPositions[p164] or p163.SeaPositions
-        local Boats3 = p163.Boats
+        local val72 = arg252 and self31.SeaPositions[arg252] or self31.SeaPositions
+        local Boats3 = self31.Boats
 
-        if #v797 == 1 then
-            return v797[1]
+        if #val72 == 1 then
+            return val72[1]
         end
 
-        if Boats3.NextNumber > #v797 then
+        if Boats3.NextNumber > #val72 then
             Boats3.NextNumber = 1
         end
 
-        local v799 = v797[Boats3.NextNumber]
+        local val73 = val72[Boats3.NextNumber]
 
-        if (p165.Position - v799.Position).Magnitude < 75 then
+        if (arg315.Position - val73.Position).Magnitude < 75 then
             Boats3.NextNumber = Boats3.NextNumber + 1
 
-            return v797[Boats3.NextNumber] or v797[1]
+            return val72[Boats3.NextNumber] or val72[1]
         end
 
-        return v799
+        return val73
     end
-    function t49.StopMovingBoat(_)
+    function tbl46.StopMovingBoat(_)
         Tween.Velocity = Vector3.zero
     end
-    function t49.DriveBoat(p167, p168)
+    function tbl46.DriveBoat(self32, arg253)
         if not IsAlive(LocalPlayer.Character) then
             return
         end
 
         local Humanoid = LocalPlayer.Character.Humanoid
-        local v804, v805 = p167:GetMyBoat()
+        local val74, val75 = self32:GetMyBoat()
 
-        if v804 then
-            local VehicleSeat = v804:FindFirstChild("VehicleSeat")
+        if val74 then
+            local VehicleSeat = val74:FindFirstChild("VehicleSeat")
 
             if VehicleSeat and VehicleSeat ~= Humanoid.SeatPart then
                 if LocalPlayer:DistanceFromCharacter(VehicleSeat.Position) <= 100 then
@@ -2444,176 +2437,176 @@ function Managers.SeaManager()
                 return true, MoveCharacter(VehicleSeat.CFrame)
             end
 
-            if VehicleSeat and v805 then
-                if typeof(p168) ~= "CFrame" then
-                    p168 = p167:GetCordinateCFrame(p168, v805)
+            if VehicleSeat and val75 then
+                if typeof(arg253) ~= "CFrame" then
+                    arg253 = self32:GetCordinateCFrame(arg253, val75)
                 end
 
-                if (v805.Position - p168.Position).Magnitude < 50 then
-                    return true, p167:StopMovingBoat()
+                if (val75.Position - arg253.Position).Magnitude < 50 then
+                    return true, self32:StopMovingBoat()
                 end
 
-                return true, p167:MoveBoat(v805, p168)
+                return true, self32:MoveBoat(val75, arg253)
             end
 
             return
         end
 
-        return p167:BuyNewBoat()
+        return self32:BuyNewBoat()
     end
-    function t49.GetSeaEvents(p169, p170, p171, p172)
-        for i = 1, #p170 do
-            local v812 = p170[i]
-            local v813 = p171[v812] or p172 and (p172[v812] and p169:GetSeaEvent(v812))
+    function tbl46.GetSeaEvents(self33, arg254, arg316, arg45)
+        for i = 1, #arg254 do
+            local val76 = arg254[i]
+            local val77 = arg316[val76] or arg45 and (arg45[val76] and self33:GetSeaEvent(val76))
 
-            if v813 then
-                return v813
+            if val77 then
+                return val77
             end
         end
     end
-    function t49.GetSeaBeast(p173)
-        local SeaBeast = p173.SeaBeast
+    function tbl46.GetSeaBeast(self34)
+        local SeaBeast = self34.SeaBeast
         if IsAlive(SeaBeast) and SeaBeast.Parent == SeaBeasts then
             return SeaBeast
         end
         if not SeaBeasts:FindFirstChildOfClass("Model") then
             return nil
         end
-        local n8 = 5000
-        local v817
+        local num10 = 5000
+        local val78
         for _, child in ipairs(SeaBeasts:GetChildren()) do
-            local v820 = LocalPlayer:DistanceFromCharacter((child.PrimaryPart or child:GetPivot()).Position)
+            local distanceFromCharacterResult3 = LocalPlayer:DistanceFromCharacter((child.PrimaryPart or child:GetPivot()).Position)
 
-            if IsAlive(child) and v820 < n8 then
-                n8 = v820
-                v817 = child
+            if IsAlive(child) and distanceFromCharacterResult3 < num10 then
+                num10 = distanceFromCharacterResult3
+                val78 = child
             end
         end
-        p173.SeaBeast = v817
+        self34.SeaBeast = val78
 
-        return v817
+        return val78
     end
-    function t49.GetSeaEvent(p174, p175)
-        if p175 == "Sea Beast" then
-            return p174:GetSeaBeast()
+    function tbl46.GetSeaEvent(self35, arg255)
+        if arg255 == "Sea Beast" then
+            return self35:GetSeaBeast()
         end
 
-        local v823, v824 = Enemies:FindFirstChild(p175)
+        local val79, val80 = Enemies:FindFirstChild(arg255)
 
-        while v823 and not IsAlive(v823) do
-            v824 = v824 or {}
-            table.insert(v824, v823)
-            v823.Name = "Died"
-            v823 = Enemies:FindFirstChild(p175)
+        while val79 and not IsAlive(val79) do
+            val80 = val80 or {}
+            table.insert(val80, val79)
+            val79.Name = "Died"
+            val79 = Enemies:FindFirstChild(arg255)
         end
 
-        if v824 then
-            for i = 1, #v824 do
-                v824[i].Name = p175
+        if val80 then
+            for i = 1, #val80 do
+                val80[i].Name = arg255
             end
         end
 
-        return v823
+        return val79
     end
-    function t49.attackSeaEvent(p176, p177)
-        if p177:GetAttribute("IsBoat") then
-            return p176:attackSeaBoat(p177)
+    function tbl46.attackSeaEvent(self36, arg256)
+        if arg256:GetAttribute("IsBoat") then
+            return self36:attackSeaBoat(arg256)
         end
 
-        if p177.Parent == SeaBeasts then
-            return p176:attackSeaBeast(p177)
+        if arg256.Parent == SeaBeasts then
+            return self36:attackSeaBeast(arg256)
         end
 
-        return p176:attackSeaEnemy(p177)
+        return self36:attackSeaEnemy(arg256)
     end
-    function t49.attackSeaBoat(p178, p179)
-        if not p179.PrimaryPart then
+    function tbl46.attackSeaBoat(self37, arg257)
+        if not arg257.PrimaryPart then
             return
         end
 
-        local v830 = p179.PrimaryPart.CFrame + v224
+        local val81 = arg257.PrimaryPart.CFrame + vector6
 
         EnableBuso()
-        MoveCharacter(v830)
-        p178:StopMovingBoat()
+        MoveCharacter(val81)
+        self37:StopMovingBoat()
 
-        if LocalPlayer:DistanceFromCharacter(v830.Position) < 35 then
-            local PrimaryPart = p179.PrimaryPart
-            local SeaSkills = v46.SeaSkills
+        if LocalPlayer:DistanceFromCharacter(val81.Position) < 35 then
+            local PrimaryPart = arg257.PrimaryPart
+            local SeaSkills = settings.SeaSkills
 
             UseSkills(PrimaryPart, SeaSkills)
 
-            local GetRandomWeapon = p178.GetRandomWeapon
+            local GetRandomWeapon = self37.GetRandomWeapon
 
-            EquipTool(GetRandomWeapon(p178), true)
+            EquipTool(GetRandomWeapon(self37), true)
         end
     end
-    function t49.attackSeaEnemy(p180, p181)
-        if not p181:FindFirstChild("HumanoidRootPart") then
+    function tbl46.attackSeaEnemy(self38, arg258)
+        if not arg258:FindFirstChild("HumanoidRootPart") then
             return
         end
 
-        local HumanoidRootPart = p181.HumanoidRootPart
+        local HumanoidRootPart = arg258.HumanoidRootPart
         local HumanoidRootPartCFrame = HumanoidRootPart.CFrame
-        local v838 = p181.Name == "Terrorshark" or p181.Name == "Shark"
+        local val82 = arg258.Name == "Terrorshark" or arg258.Name == "Shark"
 
-        if v838 then
-            v838 = LocalPlayer:DistanceFromCharacter(HumanoidRootPartCFrame.Position) <= 250
+        if val82 then
+            val82 = LocalPlayer:DistanceFromCharacter(HumanoidRootPartCFrame.Position) <= 250
         end
 
-        local v839 = if not v838 then HumanoidRootPartCFrame + v223 else HumanoidRootPartCFrame + Vector3.yAxis * ((not v231(p181.Name, HumanoidRootPart) and 0 or 155) + 45)
+        local val83 = if not val82 then HumanoidRootPartCFrame + vector5 else HumanoidRootPartCFrame + Vector3.yAxis * ((not helper16(arg258.Name, HumanoidRootPart) and 0 or 155) + 45)
 
-        MoveCharacter(v839)
+        MoveCharacter(val83)
         EquipTool()
         EnableBuso()
-        p180:StopMovingBoat()
+        self38:StopMovingBoat()
     end
-    function t49.attackSeaBeast(p182, p183)
-        if not p183:FindFirstChild("HumanoidRootPart") then
+    function tbl46.attackSeaBeast(self39, arg259)
+        if not arg259:FindFirstChild("HumanoidRootPart") then
             return
         end
 
-        local SeaBeastDirections = p182.SeaBeastDirections
-        local v843 = SeaBeastDirections[v230(#SeaBeastDirections, 1.5)] * 60
-        local HumanoidRootPartPosition = p183.HumanoidRootPart.Position
-        local v845 = CFrame.new(HumanoidRootPartPosition.X, 25, HumanoidRootPartPosition.Z) + v843
+        local SeaBeastDirections = self39.SeaBeastDirections
+        local val84 = SeaBeastDirections[helper15(#SeaBeastDirections, 1.5)] * 60
+        local HumanoidRootPartPosition = arg259.HumanoidRootPart.Position
+        local cframe = CFrame.new(HumanoidRootPartPosition.X, 25, HumanoidRootPartPosition.Z) + val84
 
         EnableBuso()
-        MoveCharacter(v845)
-        p182:StopMovingBoat()
+        MoveCharacter(cframe)
+        self39:StopMovingBoat()
 
-        local GetRandomWeapon = p182.GetRandomWeapon
+        local GetRandomWeapon = self39.GetRandomWeapon
 
-        EquipTool(GetRandomWeapon(p182), true)
-        UseSkills(v845, v46.SeaSkills)
+        EquipTool(GetRandomWeapon(self39), true)
+        UseSkills(cframe, settings.SeaSkills)
     end
 
-    return t49
+    return tbl46
 end
 function Managers.FruitManager()
-    local t50 = {
+    local tbl47 = {
 		RandomDebounce = 0,
 		MoneyToReroll = 0
 	}
-    local IsAlive = u55.IsAlive
-    local Count = u55.Inventory.Count
-    local _ = u55.Inventory.Unlocked
+    local IsAlive = Module.IsAlive
+    local Count = Module.Inventory.Count
+    local _ = Module.Inventory.Unlocked
 
-    function t50.GetRealFruitName(_, p185)
-        local v849 = string.gsub(p185.Name, " Fruit", "")
+    function tbl47.GetRealFruitName(_, arg260)
+        local gsub3 = string.gsub(arg260.Name, " Fruit", "")
 
-        return v849 .. "-" .. v849
+        return gsub3 .. "-" .. gsub3
     end
-    function t50.CanStoreFruit(p186, p187)
-        return Count[p186:GetRealFruitName(p187)] < FruitCap.Value
+    function tbl47.CanStoreFruit(self40, arg261)
+        return Count[self40:GetRealFruitName(arg261)] < FruitCap.Value
     end
-    function t50.StoreFruit(p188, p189)
-        return u55.FireRemote("StoreFruit", p188:GetRealFruitName(p189), p189)
+    function tbl47.StoreFruit(self41, arg262)
+        return Module.FireRemote("StoreFruit", self41:GetRealFruitName(arg262), arg262)
     end
-    function t50.IsFruit(_, p191)
-        return string.sub(p191.Name, -6, -1) == " Fruit" and p191:GetAttribute("DroppedBy")
+    function tbl47.IsFruit(_, arg263)
+        return string.sub(arg263.Name, -6, -1) == " Fruit" and arg263:GetAttribute("DroppedBy")
     end
-    function t50.GetInventoryItems(_)
+    function tbl47.GetInventoryItems(_)
         local children = LocalPlayer.Backpack:GetChildren()
         local Tool = LocalPlayer.Character:FindFirstChildOfClass("Tool")
 
@@ -2623,7 +2616,7 @@ function Managers.FruitManager()
 
         return children
     end
-    function t50.CanBuyMicrochip(p193)
+    function tbl47.CanBuyMicrochip(self42)
         if not IsAlive(LocalPlayer.Character) then
             return false
         end
@@ -2636,25 +2629,25 @@ function Managers.FruitManager()
             return false
         end
 
-        local GetInventoryItems = p193.GetInventoryItems
+        local GetInventoryItems = self42.GetInventoryItems
 
-        for _, v in ipairs(GetInventoryItems(p193)) do
-            if v:IsA("Tool") and p193:IsFruit(v) then
+        for _, v in ipairs(GetInventoryItems(self42)) do
+            if v:IsA("Tool") and self42:IsFruit(v) then
                 return true
             end
         end
 
         return -1
     end
-    function t50.GetStorableFruit(p194, p195)
+    function tbl47.GetStorableFruit(self43, arg264)
         if not IsAlive(LocalPlayer.Character) then
             return false
         end
 
-        local GetInventoryItems = p194.GetInventoryItems
+        local GetInventoryItems = self43.GetInventoryItems
 
-        for _, v in ipairs(GetInventoryItems(p194)) do
-            if p195 == v.Name then
+        for _, v in ipairs(GetInventoryItems(self43)) do
+            if arg264 == v.Name then
                 continue
             end
 
@@ -2662,262 +2655,266 @@ function Managers.FruitManager()
                 return
             end
 
-            local v868 = v:IsA("Tool")
+            local isAResult2 = v:IsA("Tool")
 
-            if v868 then
-                v868 = p194:IsFruit(v) and p194:CanStoreFruit(v)
+            if isAResult2 then
+                isAResult2 = self43:IsFruit(v) and self43:CanStoreFruit(v)
             end
 
-            if v868 then
+            if isAResult2 then
                 return v
             end
 
-            if v46.SmoothMode then
+            if settings.SmoothMode then
                 task.wait()
             end
         end
     end
-    function t50.RerollRandomFruit(p196)
+    function tbl47.RerollRandomFruit(self44)
         if Level.Value < 50 then
             return Level:GetPropertyChangedSignal("Value"):Wait()
         end
 
-        if Beli.Value < p196.MoneyToReroll then
+        if Beli.Value < self44.MoneyToReroll then
             return Beli:GetPropertyChangedSignal("Value"):Wait()
         end
 
-        if tick() - p196.RandomDebounce >= 1 then
-            local v870 = u55.FireRemote("Cousin", "Buy")
+        if tick() - self44.RandomDebounce >= 1 then
+            local result26 = Module.FireRemote("Cousin", "Buy")
 
-            if v870 == 1 then
-                p196.RandomDebounce = tick() + 7200
-
-                return
-            end
-
-            if v870 == 2 then
-                local _, _, v873 = u55.FireRemote("Cousin", "Check")
-
-                p196.MoneyToReroll = v873 or 0
+            if result26 == 1 then
+                self44.RandomDebounce = tick() + 7200
 
                 return
             end
 
-            if type(v870) == "string" and v870:match("%d%d:%d%d") then
-                local v874, v875 = v870:match("(%d+):(%d+)")
-                local num = tonumber(v874)
-                local num2 = tonumber(v875)
+            if result26 == 2 then
+                local _, _, moneyToReroll = Module.FireRemote("Cousin", "Check")
+
+                self44.MoneyToReroll = moneyToReroll or 0
+
+                return
+            end
+
+            if type(result26) == "string" and result26:match("%d%d:%d%d") then
+                local val85, val86 = result26:match("(%d+):(%d+)")
+                local num = tonumber(val85)
+                local num2 = tonumber(val86)
 
                 if num and num2 then
-                    local v878 = num * 60 * 60
+                    local val87 = num * 60 * 60
 
-                    p196.RandomDebounce = tick() + (v878 + num2 * 60)
+                    self44.RandomDebounce = tick() + (val87 + num2 * 60)
 
                     return
                 end
             else
-                p196.RandomDebounce = tick() + 5
+                self44.RandomDebounce = tick() + 5
             end
         end
     end
 
-    return t50
+    return tbl47
 end
-function t7.RunModules(p197)
+function Core2.RunModules(self45)
     local _next = next
-    local Managers2 = p197.Managers
-    local v239
+    local Managers2 = self45.Managers
+    local val88
     while true do
-        local v240
+        local val89
 
-        v239, v240 = _next(Managers2, v239)
+        val88, val89 = _next(Managers2, val88)
 
-        if not v239 then
+        if not val88 then
             break
         end
 
-        local ok, result = pcall(v240)
+        local ok, result = pcall(val89)
 
         if ok then
-            p197.Managers[v239] = result
-            v38[v239] = result
+            self45.Managers[val88] = result
+            _ENV[val88] = result
         else
-            v38[v239] = nil
-            warn("falha ao carregar Module [ redz hub ]: " .. v239 .. " : " .. result)
+            _ENV[val88] = nil
+            warn("falha ao carregar Module [ redz hub ]: " .. val88 .. " : " .. result)
         end
     end
 end
-function t7.Initialize(_)
-    u54 = v4.load("{Owner}Library/refs/heads/main/V5/Source.lua")()
-    u55 = v4.load("{Utils}BloxFruits/Module.luau", " return Module")(v46, v51)
-    t7:RunModules()
+function Core2.Initialize(_)
+    library = fetcher.load("{Owner}Library/refs/heads/main/V5/Source.lua")()
+    Module = fetcher.load("{Utils}BloxFruits/Module.luau", " return Module")(settings, connections)
+    Core2:RunModules()
 end
-function t7.LoadTabs(_, p200)
-    local v246 = p200:MakeTab({
+function Core2.LoadTabs(_, arg265)
+    local makeTabResult = arg265:MakeTab({
 		"Discord",
 		"Info"
 	})
-    local v247 = p200:MakeTab({
+    local makeTabResult2 = arg265:MakeTab({
 		"Farm",
 		"Home"
 	})
-    local v248 = p200:MakeTab({
+    local makeTabResult3 = arg265:MakeTab({
 		"Sea",
 		"Waves"
 	})
-    local MakeTab = p200.MakeTab
-    local MakeTab2 = p200.MakeTab
-    local v251 = MakeTab(p200, {
+    local MakeTab = arg265.MakeTab
+    local MakeTab2 = arg265.MakeTab
+    local result27 = MakeTab(arg265, {
 		"Islands",
 		"PalmTree"
 	})
-    local v252 = MakeTab2(p200, {
+    local result28 = MakeTab2(arg265, {
 		"Quests/Items",
 		"Swords"
 	})
-    local v253 = p200:MakeTab({
+    local makeTabResult4 = arg265:MakeTab({
 		"Fruit/Raid",
 		"Cherry"
 	})
-    local MakeTab3 = p200.MakeTab
-    local v255 = p200:MakeTab({
+    local MakeTab3 = arg265.MakeTab
+    local makeTabResult5 = arg265:MakeTab({
 		"Stats",
 		"Signal"
 	})
-    local v256 = p200:MakeTab({
+    local makeTabResult6 = arg265:MakeTab({
 		"Teleport",
 		"Locate"
 	})
-    local MakeTab4 = p200.MakeTab
-    local v258 = MakeTab3(p200, {
+    local MakeTab4 = arg265.MakeTab
+    local result29 = MakeTab3(arg265, {
 		"Status",
 		"scroll"
 	})
-    local v259 = MakeTab4(p200, {
+    local result30 = MakeTab4(arg265, {
 		"Visual",
 		"User"
 	})
 
     return {
-		Discord = v246,
-		MainFarm = v247,
-		Sea = v248,
-		Islands = v251,
-		Items = v252,
-		FruitRaid = v253,
-		Stats = v255,
-		Teleport = v256,
-		Status = v258,
-		Visual = v259,
-		Shop = p200:MakeTab({
+		Discord = makeTabResult,
+		MainFarm = makeTabResult2,
+		Sea = makeTabResult3,
+		Islands = result27,
+		Items = result28,
+		FruitRaid = makeTabResult4,
+		Stats = makeTabResult5,
+		Teleport = makeTabResult6,
+		Status = result29,
+		Visual = result30,
+		Shop = arg265:MakeTab({
 			"Shop",
 			"ShoppingCart"
 		}),
-		Misc = p200:MakeTab({
+		Misc = arg265:MakeTab({
 			"Misc",
 			"Settings"
 		})
 	}
 end
-function t7.InstallPlugin(_)
+function Core2.InstallPlugin(_)
     return {
-		Toggle = u55.RunFunctions.LibraryToggle(v48, t2)
+		Toggle = Module.RunFunctions.LibraryToggle(enabledOptions, tbl)
 	}
 end
-function t7.GetTranslation(_, p203)
-    local t51 = {
+function Core2.GetTranslation(_, arg266)
+    local tbl48 = {
 		BR = "Portuguese.json",
 		VN = "Vietnamese.json",
 		TH = "Thai.json"
 	}
 
-    if t51[p203] then
-        local v264 = HttpService
-        local t52 = { v4.get("{Translator}BloxFruits/" .. t51[p203]) }
+    if tbl48[arg266] then
+        local val90 = HttpService
+        local tbl49 = { loader.get("{Translator}BloxFruits/" .. tbl48[arg266]) }
 
-        return v264:JSONDecode(v1(t52))
+        return val90:JSONDecode(unpackValues(tbl49))
     end
 end
-function t7.Translator(p204, p205)
-    if not v5.Translator then
-        return p205
+function Core2.Translator(self46, arg267)
+    if not config.Translator then
+        return arg267
     end
 
-    local ok, result, v270 = pcall(function()
-        if readfile and (pcall(readfile, "PlayerCountry.txt") and type(nil) == "string") then
-            return nil, true
+    local ok, result, isCached = pcall(function()
+        if readfile and pcall(readfile, "PlayerCountry.txt") then
+            local savedCountry = readfile("PlayerCountry.txt")
+
+            if type(savedCountry) == "string" then
+                return savedCountry, true
+            end
         end
 
         return LocalizationService:GetCountryRegionForPlayerAsync(LocalPlayer)
     end)
-    local v271 = ok
+    local val91 = ok
 
     if ok then
-        v271 = result
+        val91 = result
 
         if result then
-            v271 = v270 ~= true and writefile
+            val91 = isCached ~= true and writefile
         end
     end
 
-    if v271 then
+    if val91 then
         pcall(writefile, "PlayerCountry.txt", result)
     end
 
-    local v272 = ok and p204:GetTranslation(result)
+    local val92 = ok and self46:GetTranslation(result)
 
-    if v272 then
-        return u55.RunFunctions.Translator(p205, v272)
+    if val92 then
+        return Module.RunFunctions.Translator(arg267, val92)
     end
 
-    return p205
+    return arg267
 end
-function t7.LoadLibrary(p206)
-    local v274 = u54:MakeWindow({
+function Core2.LoadLibrary(arg141)
+    local makeWindowResult = library:MakeWindow({
 		"redz Hub : Blox Fruits",
 		"by real_redz",
 		"redzHub-BloxFruits.json"
 	})
-    p206:Translator(v274)
-    local v275 = p206:InstallPlugin(v274)
-    local v276 = p206:LoadTabs(v274)
-    local FruitManager = p206.Managers.FruitManager
-    local _ = p206.Managers.QuestManager
-    local FarmManager = p206.Managers.FarmManager
-    local FireRemote = u55.FireRemote
-    local Count = u55.Inventory.Count
-    local Unlocked = u55.Inventory.Unlocked
-    local Sea = u55.GameData.Sea
-    local Toggle = v275.Toggle
-    local MainFarm = v276.MainFarm
-    local t53 = {
+    arg141:Translator(makeWindowResult)
+    local installPluginResult = arg141:InstallPlugin(makeWindowResult)
+    local loadTabsResult = arg141:LoadTabs(makeWindowResult)
+    local FruitManager = arg141.Managers.FruitManager
+    local _ = arg141.Managers.QuestManager
+    local FarmManager = arg141.Managers.FarmManager
+    local FireRemote = Module.FireRemote
+    local Count = Module.Inventory.Count
+    local Unlocked = Module.Inventory.Unlocked
+    local Sea = Module.GameData.Sea
+    local Toggle = installPluginResult.Toggle
+    local MainFarm = loadTabsResult.MainFarm
+    local tbl50 = {
 		Image = "rbxassetid://15298567397",
 		BackgroundTransparency = 0
 	}
-    v274:SelectTab(MainFarm)
+    makeWindowResult:SelectTab(MainFarm)
     local _UDim = UDim
-    local AddMinimizeButton = v274.AddMinimizeButton
-    local v289 = _UDim.new(0, 6)
-    AddMinimizeButton(v274, {
-		Button = t53,
+    local AddMinimizeButton = makeWindowResult.AddMinimizeButton
+    local result31 = _UDim.new(0, 6)
+    AddMinimizeButton(makeWindowResult, {
+		Button = tbl50,
 		Corner = {
-			CornerRadius = v289
+			CornerRadius = result31
 		}
 	})
-    v276.Discord:AddDiscordInvite({
+    loadTabsResult.Discord:AddDiscordInvite({
 		Name = "redz Hub | Community",
 		Description = "Join our discord community to receive Information about the next update, leaks, and Information about Blox Fruits!",
 		Logo = "rbxassetid://17382040552",
 		Invite = "https://discord.gg/7aR7kNVt4g"
 	})
-    local MainFarm2 = v276.MainFarm
-    local t54 = {
+    local MainFarm2 = loadTabsResult.MainFarm
+    local tbl51 = {
 		Bigger = 380,
 		Large = 450,
 		Medium = 620,
 		Small = 760
 	}
-    local t55 = {
+    local tbl52 = {
 		{
 			"Z",
 			"X",
@@ -2932,19 +2929,19 @@ function t7.LoadLibrary(p206)
 			"V"
 		}, true)
 	}
-    local u293
-    local function v294()
-        local t56 = {}
+    local val93
+    local function helper17()
+        local tbl53 = {}
 
-        for k, _ in pairs(u55.Bosses) do
-            local v885 = k
+        for k, _ in pairs(Module.Bosses) do
+            local val94 = k
 
-            if u55.Enemies.IsSpawned(v885) then
-                table.insert(t56, v885)
+            if Module.Enemies.IsSpawned(val94) then
+                table.insert(tbl53, val94)
             end
         end
 
-        u293:Set(t56)
+        val93:Set(tbl53)
     end
     MainFarm2:AddDropdown({
 		"Select Tool",
@@ -2956,7 +2953,7 @@ function t7.LoadLibrary(p206)
 		},
 		"Melee",
 		{
-			v46,
+			settings,
 			"FarmTool"
 		},
 		"FarmTool"
@@ -2970,8 +2967,8 @@ function t7.LoadLibrary(p206)
 			"Bigger"
 		},
 		"Large",
-		function(p207)
-        pcall(u54.SetScale, u54, t54[p207] or 450)
+		function(arg142)
+        pcall(library.SetScale, library, tbl51[arg142] or 450)
     end,
 		"UIScale"
 	})
@@ -3003,10 +3000,10 @@ function t7.LoadLibrary(p206)
             MainFarm2:AddToggle({
 				"Auto Trade Bones",
 				false,
-				function(p208)
-                v38.TradeBones = p208
+				function(arg143)
+                _ENV.TradeBones = arg143
 
-                while v38.TradeBones do
+                while _ENV.TradeBones do
                     task.wait()
 
                     local Bones = Count.Bones
@@ -3031,19 +3028,19 @@ function t7.LoadLibrary(p206)
     MainFarm2:AddSection("Bosses")
     MainFarm2:AddButton({
 		"Update Boss List",
-		v294
+		helper17
 	})
-    u293 = MainFarm2:AddDropdown({
+    val93 = MainFarm2:AddDropdown({
 		"Boss List",
 		{},
 		false,
 		{
-			v46,
+			settings,
 			"BossSelected"
 		},
 		"B-Selected"
 	})
-    v294()
+    helper17()
     Toggle(MainFarm2, {
 		"Auto Kill Boss Selected",
 		"Kill boss Selected"
@@ -3056,7 +3053,7 @@ function t7.LoadLibrary(p206)
 		"Take Boss Quest",
 		true,
 		{
-			v46,
+			settings,
 			"BossQuest"
 		},
 		"B-Quest"
@@ -3067,7 +3064,7 @@ function t7.LoadLibrary(p206)
 		FarmManager.Materials,
 		false,
 		{
-			v46,
+			settings,
 			"fMaterial"
 		},
 		"S-Material"
@@ -3084,7 +3081,7 @@ function t7.LoadLibrary(p206)
 		1,
 		25,
 		{
-			v46,
+			settings,
 			"mHealth"
 		},
 		"M-Health"
@@ -3097,35 +3094,35 @@ function t7.LoadLibrary(p206)
 		},
 		{ "Blox Fruit" },
 		{
-			v46,
+			settings,
 			"mTool"
 		},
 		"M-Tool"
 	})
     MainFarm2:AddDropdown({
 		"Select Skills",
-		t55[1],
-		t55[2],
+		tbl52[1],
+		tbl52[2],
 		{
-			v46,
+			settings,
 			"MasterySkills"
 		},
 		"M-Skills",
 		MultiSelect = true
 	})
     Toggle(MainFarm2, { "Auto Farm Mastery" }, "Mastery")
-    local Sea3 = v276.Sea
+    local Sea3 = loadTabsResult.Sea
     if Sea == 1 then
         Sea3:Destroy()
     elseif Sea == 2 then
-        local t57 = {
+        local tbl54 = {
 			{
 				"Sea Beast",
 				"PirateBrigade"
 			},
 			CreateDictionary({ "Sea Beast" }, true)
 		}
-        local t58 = {
+        local tbl55 = {
 			{
 				"Z",
 				"X",
@@ -3147,7 +3144,7 @@ function t7.LoadLibrary(p206)
 			"Auto Drive Boat",
 			true,
 			{
-				v46,
+				settings,
 				"autoDriveBoat"
 			},
 			"A-TweenBoat"
@@ -3155,10 +3152,10 @@ function t7.LoadLibrary(p206)
         Sea3:AddSection("Farm Select")
         Sea3:AddDropdown({
 			"Enemies",
-			t57[1],
-			t57[2],
+			tbl54[1],
+			tbl54[2],
 			{
-				v46,
+				settings,
 				"seaEnemy"
 			},
 			"S-Enemies",
@@ -3166,10 +3163,10 @@ function t7.LoadLibrary(p206)
 		})
         Sea3:AddDropdown({
 			"Select Skills",
-			t58[1],
-			t58[2],
+			tbl55[1],
+			tbl55[2],
 			{
-				v46,
+				settings,
 				"SeaSkills"
 			},
 			"S-Skills",
@@ -3183,7 +3180,7 @@ function t7.LoadLibrary(p206)
 			10,
 			250,
 			{
-				v46,
+				settings,
 				"BoatSpeed"
 			},
 			"S-BoatSpeed"
@@ -3192,13 +3189,13 @@ function t7.LoadLibrary(p206)
 			"Auto Repair Boat [ BETA ]",
 			false,
 			{
-				v46,
+				settings,
 				"RepairBoat"
 			},
 			"S-RepairBoat"
 		})
     elseif Sea == 3 then
-        local t59 = {
+        local tbl56 = {
 			{
 				"Z",
 				"X",
@@ -3213,7 +3210,7 @@ function t7.LoadLibrary(p206)
 				"V"
 			}, true)
 		}
-        local t60 = {
+        local tbl57 = {
 			{
 				"Sea Beast",
 				"Terrorshark",
@@ -3232,7 +3229,7 @@ function t7.LoadLibrary(p206)
         local cFrame4 = CFrame.new(-16526, 108, 752)
         local cFrame5 = CFrame.new(-16281, 73, 263)
         local cFrame6 = CFrame.new(-16471, 528, 539)
-        local t61 = {
+        local tbl58 = {
 			["Shipwright Teacher"] = cFrame,
 			["Shark Hunter"] = cFrame4,
 			["Beast Hunter"] = cFrame5,
@@ -3245,7 +3242,7 @@ function t7.LoadLibrary(p206)
 			"Auto Drive Boat",
 			true,
 			{
-				v46,
+				settings,
 				"autoDriveBoat"
 			},
 			"A-TweenBoat"
@@ -3253,10 +3250,10 @@ function t7.LoadLibrary(p206)
         Sea3:AddSection("Farm Select")
         Sea3:AddDropdown({
 			"Fish",
-			t60[1],
-			t60[2],
+			tbl57[1],
+			tbl57[2],
 			{
-				v46,
+				settings,
 				"fishSelected"
 			},
 			"S-Fish",
@@ -3272,7 +3269,7 @@ function t7.LoadLibrary(p206)
 			},
 			nil,
 			{
-				v46,
+				settings,
 				"boatSelected"
 			},
 			"S-Boat",
@@ -3280,10 +3277,10 @@ function t7.LoadLibrary(p206)
 		})
         Sea3:AddDropdown({
 			"Select Skills",
-			t59[1],
-			t59[2],
+			tbl56[1],
+			tbl56[2],
 			{
-				v46,
+				settings,
 				"SeaSkills"
 			},
 			"S-Skills",
@@ -3303,7 +3300,7 @@ function t7.LoadLibrary(p206)
 			},
 			"6",
 			{
-				v46,
+				settings,
 				"SeaLevel"
 			},
 			"S-SeaLevel"
@@ -3315,7 +3312,7 @@ function t7.LoadLibrary(p206)
 			10,
 			250,
 			{
-				v46,
+				settings,
 				"BoatSpeed"
 			},
 			"S-BoatSpeed"
@@ -3324,7 +3321,7 @@ function t7.LoadLibrary(p206)
 			"Auto Repair Boat [ BETA ]",
 			false,
 			{
-				v46,
+				settings,
 				"RepairBoat"
 			},
 			"S-RepairBoat"
@@ -3340,34 +3337,31 @@ function t7.LoadLibrary(p206)
 			},
 			"Spy",
 			{
-				v46,
+				settings,
 				"selectedNpc"
 			}
 		})
         Sea3:AddToggle({
 			"Teleport to NPC",
 			false,
-			function(p209)
-            v38.teleporting = p209
+			function(arg144)
+            _ENV.teleporting = arg144
 
-            while v38.teleporting do
+            while _ENV.teleporting do
                 task.wait()
 
-                if v46.selectedNpc then
-                    MoveCharacter(t61[v46.selectedNpc])
+                if settings.selectedNpc then
+                    MoveCharacter(tbl58[settings.selectedNpc])
                 end
             end
 
-            if p209 and nil then
-                (nil):Set(false, true)
-            end
         end
-		}):Callback(function(p210)
-            if p210 then
-                local TweenManager = p206.Managers.TweenManager
+		}):Callback(function(arg145)
+            if arg145 then
+                local TweenManager = arg141.Managers.TweenManager
                 local huge = math.huge
 
-                if v38.teleporting then
+                if _ENV.teleporting then
                     if not (huge < 15) then
                     end
                 end
@@ -3376,23 +3370,23 @@ function t7.LoadLibrary(p206)
                     task.wait()
 
                     if TweenManager:GetLastPosition() then
-                        local v890 = LocalPlayer
-                        local t62 = { TweenManager:GetLastPosition() }
+                        local val95 = LocalPlayer
+                        local tbl59 = { TweenManager:GetLastPosition() }
 
-                        huge = v890:DistanceFromCharacter(v1(t62))
+                        huge = val95:DistanceFromCharacter(unpackValues(tbl59))
                     end
-                until not v38.teleporting or huge < 15
+                until not _ENV.teleporting or huge < 15
 
-                v38.teleporting = false
+                _ENV.teleporting = false
             end
         end)
         Sea3:AddSection("Quests/Items")
         Toggle(Sea3, { "Auto Unlock Shipwright Subclass [ BETA ]" }, "Shipwright")
         Toggle(Sea3, { "Auto Shark Anchor" }, "SharkAnchor")
     end
-    local Stats = v276.Stats
-    if Level.Value < u55.GameData.MaxLevel then
-        local t63 = {}
+    local Stats = loadTabsResult.Stats
+    if Level.Value < Module.GameData.MaxLevel then
+        local tbl60 = {}
         local Points = Data:WaitForChild("Points")
         local Stats2 = Data:WaitForChild("Stats")
 
@@ -3403,7 +3397,7 @@ function t7.LoadLibrary(p206)
 			1,
 			3,
 			{
-				v46,
+				settings,
 				"StatsPoints"
 			},
 			"P-Stats"
@@ -3411,20 +3405,20 @@ function t7.LoadLibrary(p206)
         Stats:AddToggle({
 			"Auto Stats",
 			false,
-			function(p211)
-            v38.AutoStats = p211
+			function(arg146)
+            _ENV.AutoStats = arg146
 
-            while task.wait() and v38.AutoStats do
+            while task.wait() and _ENV.AutoStats do
                 local PointsValue = Points.Value
 
                 if PointsValue > 0 then
-                    for k, v in pairs(t63) do
-                        local v898 = k
+                    for k, v in pairs(tbl60) do
+                        local val96 = k
 
-                        if v and Stats2[v898].Level.Value < u55.GameData.MaxLevel then
-                            local v899 = math.clamp(math.clamp(v46.StatsPoints or 3, 0, PointsValue), 0, u55.GameData.MaxLevel)
+                        if v and Stats2[val96].Level.Value < Module.GameData.MaxLevel then
+                            local clamp2 = math.clamp(math.clamp(settings.StatsPoints or 3, 0, PointsValue), 0, Module.GameData.MaxLevel)
 
-                            FireRemote("AddPoint", v898, v899)
+                            FireRemote("AddPoint", val96, clamp2)
                         end
                     end
                 end
@@ -3439,48 +3433,48 @@ function t7.LoadLibrary(p206)
 			"Gun",
 			"Sword",
 			"Demon Fruit"
-		}, function(_, p213)
+		}, function(_, arg268)
             Stats:AddToggle({
-				p213,
+				arg268,
 				false,
 				{
-					t63,
-					p213
+					tbl60,
+					arg268
 				},
-				"Stats-" .. p213
+				"Stats-" .. arg268
 			})
         end)
     else
         Stats:Destroy()
     end
-    local Islands = v276.Islands
+    local Islands = loadTabsResult.Islands
     if Sea == 3 then
-        local function v310(p214, p215)
-            local v904 = Islands:AddParagraph({ p214 .. " : not Spawn" })
+        local function helper18(arg147, arg269)
+            local paragraph = Islands:AddParagraph({ arg147 .. " : not Spawn" })
 
-            if not p215 then
-                p215 = string.gsub(p214, " ", "")
+            if not arg269 then
+                arg269 = string.gsub(arg147, " ", "")
             end
 
             while task.wait() do
-                local p215_2 = Map:FindFirstChild(p215)
+                local foundChild = Map:FindFirstChild(arg269)
 
-                if p215_2 then
+                if foundChild then
                     local floor = math.floor
-                    local WorldPivotPosition = p215_2.WorldPivot.Position
+                    local WorldPivotPosition = foundChild.WorldPivot.Position
 
-                    v904:SetTitle(p214 .. " : Spawned | Distance : " .. floor(LocalPlayer:DistanceFromCharacter(WorldPivotPosition) / 5))
+                    paragraph:SetTitle(arg147 .. " : Spawned | Distance : " .. floor(LocalPlayer:DistanceFromCharacter(WorldPivotPosition) / 5))
                 else
-                    v904:SetTitle(p214 .. " : not Spawn")
+                    paragraph:SetTitle(arg147 .. " : not Spawn")
                     Map.ChildAdded:Wait()
                 end
             end
         end
 
         Islands:AddSection("Islands Stats")
-        task.spawn(v310, "Mirage Island", "MysticIsland")
-        task.spawn(v310, "Kitsune Island")
-        task.spawn(v310, "Prehistoric Island")
+        task.spawn(helper18, "Mirage Island", "MysticIsland")
+        task.spawn(helper18, "Kitsune Island")
+        task.spawn(helper18, "Prehistoric Island")
         Islands:AddSection("Prehistoric Island")
         Toggle(Islands, { "Auto Craft Volcanic Magnet" }, "CraftVolcanicMagnet")
         Toggle(Islands, { "Teleport to Prehistoric Island" }, "GotoVolcano")
@@ -3489,7 +3483,7 @@ function t7.LoadLibrary(p206)
 			"Ignore Collect Bones [ Fully ]",
 			false,
 			{
-				v46,
+				settings,
 				"IgnoreBones"
 			},
 			"IgnoreBones"
@@ -3498,7 +3492,7 @@ function t7.LoadLibrary(p206)
 			"Ignore Collect Dragon Egg [ Fully ]",
 			false,
 			{
-				v46,
+				settings,
 				"IgnoreEggs"
 			},
 			"IgnoreEggs"
@@ -3507,7 +3501,7 @@ function t7.LoadLibrary(p206)
 			"Reset character after Finishing [ Fully ]",
 			false,
 			{
-				v46,
+				settings,
 				"VolcanoReset"
 			},
 			"VolcanoReset"
@@ -3522,7 +3516,7 @@ function t7.LoadLibrary(p206)
 			5,
 			20,
 			{
-				v46,
+				settings,
 				"Azure"
 			},
 			"A-Amount"
@@ -3530,11 +3524,11 @@ function t7.LoadLibrary(p206)
         Islands:AddToggle({
 			"Auto Trade Azure Ember",
 			false,
-			function(p216)
-            v38.TradeAzure = p216
+			function(arg148)
+            _ENV.TradeAzure = arg148
 
-            while v38.TradeAzure do
-                if Lighting:GetAttribute("IsBlueMoon") and not Lighting:GetAttribute("BlueMoonEnded") and Count["Azure Ember"] >= v46.Azure then
+            while _ENV.TradeAzure do
+                if Lighting:GetAttribute("IsBlueMoon") and not Lighting:GetAttribute("BlueMoonEnded") and Count["Azure Ember"] >= settings.Azure then
                     Net["RF/KitsuneStatuePray"]:InvokeServer()
                 end
 
@@ -3551,10 +3545,10 @@ function t7.LoadLibrary(p206)
         Islands:AddToggle({
 			"Look To Moon",
 			false,
-			function(p217)
-            v38.LookMoon = p217
+			function(arg149)
+            _ENV.LookMoon = arg149
 
-            while v38.LookMoon do
+            while _ENV.LookMoon do
                 CurrentCamera.CFrame = CFrame.new(CurrentCamera.CFrame.Position, Lighting:GetMoonDirection() + CurrentCamera.CFrame.Position)
                 task.wait()
             end
@@ -3564,8 +3558,8 @@ function t7.LoadLibrary(p206)
     else
         Islands:Destroy()
     end
-    local FruitRaid = v276.FruitRaid
-    local t64 = {
+    local FruitRaid = loadTabsResult.FruitRaid
+    local tbl61 = {
 		"Rocket",
 		"Spin",
 		"Blade",
@@ -3574,36 +3568,36 @@ function t7.LoadLibrary(p206)
 		"Smoke",
 		"Spike"
 	}
-    local u312 = true
-    local u314
+    local flag6 = true
+    local val97
     FruitRaid:AddSection("Fruits")
     FruitRaid:AddToggle({
 		"Auto Store Fruits",
 		false,
-		function(p218)
-        v38.auto_store = p218
+		function(arg150)
+        _ENV.auto_store = arg150
 
-        while v38.auto_store do
-            task.wait(not v46.SmoothMode and 0.2 or 0.3)
-            u312 = false
+        while _ENV.auto_store do
+            task.wait(not settings.SmoothMode and 0.2 or 0.3)
+            flag6 = false
 
-            local v911 = not LocalPlayer:GetAttribute("IslandRaiding")
+            local flag7 = not LocalPlayer:GetAttribute("IslandRaiding")
 
-            if v911 then
-                v911 = v38.unstore_common_fruits and u314
+            if flag7 then
+                flag7 = _ENV.unstore_common_fruits and val97
             end
 
-            local StorableFruit = FruitManager:GetStorableFruit(v911)
+            local StorableFruit = FruitManager:GetStorableFruit(flag7)
 
             if StorableFruit then
                 FruitManager:StoreFruit(StorableFruit)
-                u314 = nil
+                val97 = nil
             else
-                u312 = true
+                flag6 = true
             end
         end
 
-        u312 = true
+        flag6 = true
     end,
 		"F-AutoStore"
 	})
@@ -3611,10 +3605,10 @@ function t7.LoadLibrary(p206)
     FruitRaid:AddToggle({
 		"Auto Random Fruit",
 		false,
-		function(p219)
-        v38.random_fruit = p219
+		function(arg151)
+        _ENV.random_fruit = arg151
 
-        while v38.random_fruit do
+        while _ENV.random_fruit do
             FruitManager:RerollRandomFruit()
             task.wait(0.1)
         end
@@ -3627,10 +3621,10 @@ function t7.LoadLibrary(p206)
     else
         FruitRaid:AddDropdown({
 			"Select Chip",
-			u55.RaidList,
+			Module.RaidList,
 			"",
 			{
-				v46,
+				settings,
 				"SelectedChip"
 			},
 			"R-RaidChip"
@@ -3642,14 +3636,14 @@ function t7.LoadLibrary(p206)
         FruitRaid:AddToggle({
 			"Auto Buy Chip",
 			false,
-			function(p220)
-            v38.raid_microchip = p220
+			function(arg152)
+            _ENV.raid_microchip = arg152
 
-            while v38.raid_microchip do
-                if not u312 then
+            while _ENV.raid_microchip do
+                if not flag6 then
                     task.wait()
                 elseif FruitManager:CanBuyMicrochip() then
-                    FireRemote("RaidsNpc", "Select", v46.SelectedChip)
+                    FireRemote("RaidsNpc", "Select", settings.SelectedChip)
                 else
                     task.wait(0.1)
                 end
@@ -3660,22 +3654,22 @@ function t7.LoadLibrary(p206)
         FruitRaid:AddToggle({
 			"Unstore Common Fruits",
 			false,
-			function(p221)
-            v38.unstore_common_fruits = p221
+			function(arg153)
+            _ENV.unstore_common_fruits = arg153
 
-            while v38.unstore_common_fruits do
-                if FruitManager:CanBuyMicrochip() == -1 and u312 then
-                    for i = 1, #t64 do
-                        local v915 = t64[i]
-                        local v916 = v915 .. "-" .. v915
+            while _ENV.unstore_common_fruits do
+                if FruitManager:CanBuyMicrochip() == -1 and flag6 then
+                    for i = 1, #tbl61 do
+                        local val98 = tbl61[i]
+                        local val99 = val98 .. "-" .. val98
 
-                        if LocalPlayer.Character:FindFirstChild(v916) or LocalPlayer.Backpack:FindFirstChild(v916) then
+                        if LocalPlayer.Character:FindFirstChild(val99) or LocalPlayer.Backpack:FindFirstChild(val99) then
                             break
                         end
 
-                        if Count[v916] > 0 then
-                            u314 = v915 .. " Fruit"
-                            FireRemote("LoadFruit", v916)
+                        if Count[val99] > 0 then
+                            val97 = val98 .. " Fruit"
+                            FireRemote("LoadFruit", val99)
 
                             break
                         end
@@ -3688,9 +3682,9 @@ function t7.LoadLibrary(p206)
 			"R-Unstore"
 		})
     end
-    local Teleport = v276.Teleport
+    local Teleport = loadTabsResult.Teleport
     local cFrame = CFrame.new(28286, 14897, 103)
-    local v317 = ({
+    local val100 = ({
 		{
 			"WindMill",
 			"Marine",
@@ -3752,7 +3746,7 @@ function t7.LoadLibrary(p206)
     local cFrame17 = CFrame.new(-1535, 7, -3014)
     local cFrame18 = CFrame.new(-5290, 9, 8349)
     local cFrame19 = CFrame.new(-4814, 718, -2551)
-    local t65 = {
+    local tbl62 = {
 		["Middle Town"] = cFrame7,
 		MarineFord = cFrame8,
 		Marine = cFrame9,
@@ -3799,58 +3793,55 @@ function t7.LoadLibrary(p206)
     Teleport:AddButton({
 		"Teleport to Sea 1",
 		function()
-        u55:TravelTo(1)
+        Module:TravelTo(1)
     end,
 		Desc = "Main"
 	})
     Teleport:AddButton({
 		"Teleport to Sea 2",
 		function()
-        u55:TravelTo(2)
+        Module:TravelTo(2)
     end,
 		Desc = "Dressrosa"
 	})
     Teleport:AddButton({
 		"Teleport to Sea 3",
 		function()
-        u55:TravelTo(3)
+        Module:TravelTo(3)
     end,
 		Desc = "Zou"
 	})
     Teleport:AddSection("Islands")
     Teleport:AddDropdown({
 		"Select Island",
-		v317,
+		val100,
 		"",
 		{
-			v38,
+			_ENV,
 			"SelectedIsland"
 		}
 	})
     Teleport:AddToggle({
 		"Teleport to Island",
 		false,
-		function(p222)
-        v38.teleporting = p222
+		function(arg154)
+        _ENV.teleporting = arg154
 
-        while v38.teleporting do
+        while _ENV.teleporting do
             task.wait()
 
-            if t65[v38.SelectedIsland] then
-                MoveCharacter(t65[v38.SelectedIsland])
+            if tbl62[_ENV.SelectedIsland] then
+                MoveCharacter(tbl62[_ENV.SelectedIsland])
             end
         end
 
-        if p222 and nil then
-            (nil):Set(false, true)
-        end
     end
-	}):Callback(function(p223)
-        if p223 then
-            local TweenManager = p206.Managers.TweenManager
+	}):Callback(function(arg155)
+        if arg155 then
+            local TweenManager = arg141.Managers.TweenManager
             local huge = math.huge
 
-            if v38.teleporting then
+            if _ENV.teleporting then
                 if not (huge < 15) then
                 end
             end
@@ -3863,9 +3854,9 @@ function t7.LoadLibrary(p206)
 
                     huge = LocalPlayer:DistanceFromCharacter(GetLastPosition(TweenManager))
                 end
-            until not v38.teleporting or huge < 15
+            until not _ENV.teleporting or huge < 15
 
-            v38.teleporting = false
+            _ENV.teleporting = false
         end
     end)
     if Sea == 3 then
@@ -3884,152 +3875,152 @@ function t7.LoadLibrary(p206)
         end
 		})
     end
-    local Status = v276.Status
+    local Status = loadTabsResult.Status
     local _ = FarmManager.Enemies.Elites
-    local IsSpawned = u55.Enemies.IsSpawned
+    local IsSpawned = Module.Enemies.IsSpawned
     local timestamp
-    local t66 = {
-		"ðŸŒ‘",
-		"ðŸŒ˜",
-		"ðŸŒ—",
-		"ðŸŒ–",
-		"ðŸŒ•",
-		"ðŸŒ”",
-		"ðŸŒ“",
-		"ðŸŒ’"
+    local tbl63 = {
+		"🌑",
+		"🌘",
+		"🌗",
+		"🌖",
+		"🌕",
+		"🌔",
+		"🌓",
+		"🌒"
 	}
-    local t67 = {}
-    local n9 = 0
-    local function v339(p224, p225)
-        if p225 ~= false then
-            table.insert(t67, {
+    local tbl64 = {}
+    local num11 = 0
+    local function NewStatusParagraph(arg156, arg270)
+        if arg270 ~= false then
+            table.insert(tbl64, {
 				Paragraph = Status:AddParagraph({ "" }),
-				Function = p224
+				Function = arg156
 			})
         end
     end
-    v339(function()
-        local Progress = u55:GetProgress("EliteProgress", "EliteHunter", "Progress")
-        local EnemyByTag = u55.Enemies:GetEnemyByTag("Elite")
+    NewStatusParagraph(function()
+        local Progress = Module:GetProgress("EliteProgress", "EliteHunter", "Progress")
+        local EnemyByTag = Module.Enemies:GetEnemyByTag("Elite")
 
         if EnemyByTag then
             local EnemyByTagName = EnemyByTag.Name
 
-            return ("Elite Progress: %i\nElite Hunter: %s %s").format("Elite Progress: %i\nElite Hunter: %s %s", Progress, EnemyByTagName, "ðŸŸ¢")
+            return ("Elite Progress: %i\nElite Hunter: %s %s").format("Elite Progress: %i\nElite Hunter: %s %s", Progress, EnemyByTagName, "🟢")
         end
 
-        local v926 = timestamp
+        local val101 = timestamp
 
-        if v926 then
-            v926 = 600 - (tick() - timestamp) >= 0 and t6.GetTimer(600 - (tick() - timestamp) or "00:00")
+        if val101 then
+            val101 = 600 - (tick() - timestamp) >= 0 and tbl4.GetTimer(600 - (tick() - timestamp) or "00:00")
         end
 
-        local v927 = (v926 or "") .. "ðŸ”´"
+        local val102 = (val101 or "") .. "🔴"
 
-        return ("Elite Progress: %i\nElite Hunter: %s").format("Elite Progress: %i\nElite Hunter: %s", Progress, v927)
+        return ("Elite Progress: %i\nElite Hunter: %s").format("Elite Progress: %i\nElite Hunter: %s", Progress, val102)
     end, Sea == 3)
-    v339(function()
-        local v930 = if not IsSpawned("Cake Prince") then IsSpawned("Dough King") and "Dough King" else "Cake Prince"
+    NewStatusParagraph(function()
+        local val103 = if not IsSpawned("Cake Prince") then IsSpawned("Dough King") and "Dough King" else "Cake Prince"
 
-        if v930 then
-            return ("Katakuri: %s %s").format("Katakuri: %s %s", v930, "ðŸŸ¢")
+        if val103 then
+            return ("Katakuri: %s %s").format("Katakuri: %s %s", val103, "🟢")
         end
 
-        local v931 = string.gsub(u55:GetProgress("Katakuri", "CakePrinceSpawner", true), "%D", "")
+        local gsub4 = string.gsub(Module:GetProgress("Katakuri", "CakePrinceSpawner", true), "%D", "")
 
-        return "Katakuri: " .. if v931:len() ~= 0 then v931 else "0"
+        return "Katakuri: " .. if gsub4:len() ~= 0 then gsub4 else "0"
     end, Sea == 3)
-    v339(function()
+    NewStatusParagraph(function()
         if IsSpawned("Tyrant of the Skies") then
-            return "Tyrant of the Skies: ðŸŸ¢"
+            return "Tyrant of the Skies: 🟢"
         end
 
         local TikiOutpost = Map.TikiOutpost
-        local n10 = 0
+        local num12 = 0
 
         for i = 1, 4 do
-            local v935 = TikiOutpost:FindFirstChild("Eye" .. i, true)
+            local eye = TikiOutpost:FindFirstChild("Eye" .. i, true)
 
-            if v935 and v935.Transparency == 0 then
-                n10 += 1
+            if eye and eye.Transparency == 0 then
+                num12 += 1
             end
         end
 
-        local v936 = n10 ~= 4 and "ðŸ”´" or "ðŸŸ "
+        local val104 = num12 ~= 4 and "🔴" or "🟠"
 
-        return ("Tyrant of the Skies: %i/4 %s").format("Tyrant of the Skies: %i/4 %s", n10, v936)
+        return ("Tyrant of the Skies: %i/4 %s").format("Tyrant of the Skies: %i/4 %s", num12, val104)
     end, Sea == 3)
-    v339(function()
-        local Progress = u55:GetProgress("Sword Dealer", "LegendarySwordDealer", "1")
+    NewStatusParagraph(function()
+        local Progress = Module:GetProgress("Sword Dealer", "LegendarySwordDealer", "1")
 
         if type(Progress) == "string" then
-            return ("Sword Dealer: %s %s").format("Sword Dealer: %s %s", Progress, "ðŸŸ¢")
+            return ("Sword Dealer: %s %s").format("Sword Dealer: %s %s", Progress, "🟢")
         end
 
-        return ("Sword Dealer: %s").format("Sword Dealer: %s", "ðŸ”´")
+        return ("Sword Dealer: %s").format("Sword Dealer: %s", "🔴")
     end, Sea == 2)
-    v339(function()
-        local v938, v939 = u55:GetProgress("BaristaCousin", "ColorsDealer", "1")
+    NewStatusParagraph(function()
+        local val105, val106 = Module:GetProgress("BaristaCousin", "ColorsDealer", "1")
 
-        if type(v938) == "string" then
-            local v940 = not ((v939 or 1) >= 3) and "Rare" or "LEGENDARY"
+        if type(val105) == "string" then
+            local flag8 = not ((val106 or 1) >= 3) and "Rare" or "LEGENDARY"
 
-            return ("Barista Cousin: %s [ %s ] %s").format("Barista Cousin: %s [ %s ] %s", v938, v940, "ðŸŸ¢")
+            return ("Barista Cousin: %s [ %s ] %s").format("Barista Cousin: %s [ %s ] %s", val105, flag8, "🟢")
         end
 
-        return "Barista Cousin: ðŸ”´"
+        return "Barista Cousin: 🔴"
     end)
-    v339(function()
-        local v941 = workspace:FindFirstChild("Fruit ")
+    NewStatusParagraph(function()
+        local fruit = workspace:FindFirstChild("Fruit ")
 
-        if v941 then
-            local RealFruitName = u55:GetRealFruitName(v941)
-            local v943 = ("Fruit [ %s-%s ]").format("Fruit [ %s-%s ]", RealFruitName, RealFruitName)
+        if fruit then
+            local RealFruitName = Module:GetRealFruitName(fruit)
+            local val107 = ("Fruit [ %s-%s ]").format("Fruit [ %s-%s ]", RealFruitName, RealFruitName)
 
-            return ("Devil Fruit: %s %s").format("Devil Fruit: %s %s", v943, "ðŸŸ¢")
+            return ("Devil Fruit: %s %s").format("Devil Fruit: %s %s", val107, "🟢")
         end
 
-        return "Devil Fruit: ðŸ”´"
+        return "Devil Fruit: 🔴"
     end)
-    v339(function()
-        local t68 = {}
+    NewStatusParagraph(function()
+        local tbl65 = {}
 
-        for i = 1, #t5.Berries do
-            local v946 = i
+        for i = 1, #tbl3.Berries do
+            local val108 = i
 
-            if v946 % 10 == 0 then
+            if val108 % 10 == 0 then
                 task.wait(0.1)
             end
 
-            local v947 = t5.Berries[v946]
-            local GetAttributes = v947.GetAttributes
+            local val109 = tbl3.Berries[val108]
+            local GetAttributes = val109.GetAttributes
 
-            for _, v in pairs(GetAttributes(v947)) do
-                table.insert(t68, (string.sub(v, 1, -7)))
+            for _, v in pairs(GetAttributes(val109)) do
+                table.insert(tbl65, (string.sub(v, 1, -7)))
             end
         end
 
-        if #t68 > 0 then
-            local v951 = #t68
-            local v952 = table.concat(t68, ", ")
+        if #tbl65 > 0 then
+            local val110 = #tbl65
+            local concat2 = table.concat(tbl65, ", ")
 
-            return ("Berries: #%i [ %s ] %s").format("Berries: #%i [ %s ] %s", v951, v952, "ðŸŸ¢")
+            return ("Berries: #%i [ %s ] %s").format("Berries: #%i [ %s ] %s", val110, concat2, "🟢")
         end
 
-        return "Berries: ðŸ”´"
+        return "Berries: 🔴"
     end)
-    v339(function()
+    NewStatusParagraph(function()
         return "Players: " .. #Players:GetPlayers() .. "/12"
     end)
-    v339(function()
-        local v953 = #v43
-        local v954 = #v42
-        local v955 = v46.RunningOption or "Null"
-        local RunningMethod = v46.RunningMethod
+    NewStatusParagraph(function()
+        local val111 = #rzFarmFunctions
+        local val112 = #rzFunctions
+        local val113 = settings.RunningOption or "Null"
+        local RunningMethod = settings.RunningMethod
 
-        return ("Enabled Options: %i/%i\nFarm Status: %s [ %s ]").format("Enabled Options: %i/%i\nFarm Status: %s [ %s ]", v953, v954, v955, RunningMethod or "Null")
+        return ("Enabled Options: %i/%i\nFarm Status: %s [ %s ]").format("Enabled Options: %i/%i\nFarm Status: %s [ %s ]", val111, val112, val113, RunningMethod or "Null")
     end)
-    v339(function()
+    NewStatusParagraph(function()
         local MoonPhase = Lighting:GetAttribute("MoonPhase")
         local ClockTime = Lighting.ClockTime
 
@@ -4037,58 +4028,58 @@ function t7.LoadLibrary(p206)
             MoonPhase += 1
         end
 
-        local v959 = t66[MoonPhase]
-        local v960 = ClockTime > 18 or (not (ClockTime < 6) and "ðŸŸ " or "ðŸŸ¢")
+        local val114 = tbl63[MoonPhase]
+        local val115 = ClockTime > 18 or (not (ClockTime < 6) and "🟠" or "🟢")
 
-        return ("MoonPhase: %s %i/8 %s").format("MoonPhase: %s %i/8 %s", v959, MoonPhase, v960)
+        return ("MoonPhase: %s %i/8 %s").format("MoonPhase: %s %i/8 %s", val114, MoonPhase, val115)
     end, Sea == 3)
-    local n11 = 1
+    local num13 = 1
     local connection
     connection = Stepped:Connect(function()
         if not Status or not Status.Cont then
             return connection:Disconnect()
         end
 
-        local v961 = Sea == 3
+        local val116 = Sea == 3
 
-        if v961 then
-            v961 = n11 == 1 and tick() - n9 >= 1
+        if val116 then
+            val116 = num13 == 1 and tick() - num11 >= 1
         end
 
-        if v961 then
+        if val116 then
             if not Status.Cont.Parent then
-                n9 = tick()
+                num11 = tick()
             end
 
-            if u55.Enemies:GetEnemyByTag("Elite") then
+            if Module.Enemies:GetEnemyByTag("Elite") then
                 timestamp = tick()
             end
         end
 
-        if tick() - n9 >= 1 and Status.Cont.Parent then
-            local v962 = t67[n11]
+        if tick() - num11 >= 1 and Status.Cont.Parent then
+            local val117 = tbl64[num13]
 
-            n11 = if not (n11 >= #t67) then n11 + 1 else 0
+            num13 = if not (num13 >= #tbl64) then num13 + 1 else 0
 
-            if n11 >= #t67 then
-                n9 = tick()
+            if num13 >= #tbl64 then
+                num11 = tick()
             end
 
-            if v962 and not v962.Updating then
-                v962.Updating = true
+            if val117 and not val117.Updating then
+                val117.Updating = true
 
-                local Paragraph = v962.Paragraph
-                local t69 = { v962.Function() }
+                local Paragraph = val117.Paragraph
+                local tbl66 = { val117.Function() }
 
-                Paragraph:SetTitle(v1(t69))
-                v962.Updating = false
+                Paragraph:SetTitle(unpackValues(tbl66))
+                val117.Updating = false
             end
         end
     end)
-    local Visual = v276.Visual
-    local EspManager = p206.Managers.EspManager
-    local SeaManager = p206.Managers.SeaManager
-    local t70 = {}
+    local Visual = loadTabsResult.Visual
+    local EspManager = arg141.Managers.EspManager
+    local SeaManager = arg141.Managers.SeaManager
+    local tbl67 = {}
     local color3 = Color3.fromRGB(220, 220, 220)
     local color3_2 = Color3.fromRGB(255, 0, 0)
     local color3_3 = Color3.fromRGB(0, 255, 255)
@@ -4098,66 +4089,66 @@ function t7.LoadLibrary(p206)
     local color3_7 = Color3.fromRGB(255, 255, 0)
     local color3_8 = Color3.fromRGB(0, 255, 255)
     local color3_9 = Color3.fromRGB(150, 0, 255)
-    local t71 = {
+    local tbl68 = {
 		Chest1 = color3_6,
 		Chest2 = color3_7,
 		Chest3 = color3_8,
 		Other = color3_9
 	}
-    t70.MyBoat = EspManager.new("MyBoat"):SetEspColor(color3_5):SetCustomEspDisplay(function(p226, p227)
-        local Humanoid = p226:FindFirstChild("Humanoid")
-        local OriginalMaxHealth = p226:GetAttribute("OriginalMaxHealth")
+    tbl67.MyBoat = EspManager.new("MyBoat"):SetEspColor(color3_5):SetCustomEspDisplay(function(arg157, arg271)
+        local Humanoid = arg157:FindFirstChild("Humanoid")
+        local OriginalMaxHealth = arg157:GetAttribute("OriginalMaxHealth")
 
-        return ("My Boat<font color='rgb(170, 170, 0)'> [ %im ]</font>\n<font color='rgb(25, 240, 25)'>[%i/%i]</font>"):format(p227, Humanoid and Humanoid.Value or OriginalMaxHealth, OriginalMaxHealth)
+        return ("My Boat<font color='rgb(170, 170, 0)'> [ %im ]</font>\n<font color='rgb(25, 240, 25)'>[%i/%i]</font>"):format(arg271, Humanoid and Humanoid.Value or OriginalMaxHealth, OriginalMaxHealth)
     end):GetInstance(function()
         return select(1, SeaManager:GetMyBoat())
     end)
-    t70.Players = EspManager.new("Players"):SetEspColor(color3):SetObjects(Characters):Validator(function(p228)
-        return p228 ~= LocalPlayer.Character
+    tbl67.Players = EspManager.new("Players"):SetEspColor(color3):SetObjects(Characters):Validator(function(arg158)
+        return arg158 ~= LocalPlayer.Character
     end)
-    t70.Islands = EspManager.new("Islands"):SetEspColor(color3_3):SetObjects(Locations):Validator(function(p229)
-        return p229.Name ~= "Sea" and string.sub(p229.Name, 1, 6) ~= "Trial "
+    tbl67.Islands = EspManager.new("Islands"):SetEspColor(color3_3):SetObjects(Locations):Validator(function(arg159)
+        return arg159.Name ~= "Sea" and string.sub(arg159.Name, 1, 6) ~= "Trial "
     end)
-    t70.Fruits = EspManager.new("Fruits"):SetEspColor(color3_2):SetObjects(workspace):WaitChildsAdded():Validator(function(p230)
-        if p230.Name == "Fruit " then
-            local RealFruitName = u55:GetRealFruitName(p230)
-            local Fruits = t70.Fruits
-            local t72 = { ("Fruit [ %s-%s ]").format("Fruit [ %s-%s ]", RealFruitName, RealFruitName) }
+    tbl67.Fruits = EspManager.new("Fruits"):SetEspColor(color3_2):SetObjects(workspace):WaitChildsAdded():Validator(function(arg160)
+        if arg160.Name == "Fruit " then
+            local RealFruitName = Module:GetRealFruitName(arg160)
+            local Fruits = tbl67.Fruits
+            local tbl69 = { ("Fruit [ %s-%s ]").format("Fruit [ %s-%s ]", RealFruitName, RealFruitName) }
 
-            Fruits:SetInstanceName(p230, v1(t72))
+            Fruits:SetInstanceName(arg160, unpackValues(tbl69))
         end
 
-        if string.find(p230.Name, "Fruit") and p230:IsA("Model") then
-            return p230.ClassName ~= "Model" or p230.WorldPivot.Position ~= Vector3.zero
+        if string.find(arg160.Name, "Fruit") and arg160:IsA("Model") then
+            return arg160.ClassName ~= "Model" or arg160.WorldPivot.Position ~= Vector3.zero
         end
     end)
-    t70.Flowers = EspManager.new("Flowers"):SetObjects(workspace):WaitChildsAdded():SetEspColor(function(p231)
-        return p231.Color
-    end):Validator(function(p232)
-        return string.sub(p232.Name, 1, 6) == "Flower"
+    tbl67.Flowers = EspManager.new("Flowers"):SetObjects(workspace):WaitChildsAdded():SetEspColor(function(arg161)
+        return arg161.Color
+    end):Validator(function(arg162)
+        return string.sub(arg162.Name, 1, 6) == "Flower"
     end)
-    t70.Chests = EspManager.new("Chests"):SetObjects(t5.Chests):SetAlwaysValidate():SetEspColor(function(p233)
-        return t71[p233.Name] or t71.Other
-    end):Validator(function(p234)
-        return not p234:GetAttribute("IsDisabled")
+    tbl67.Chests = EspManager.new("Chests"):SetObjects(tbl3.Chests):SetAlwaysValidate():SetEspColor(function(arg163)
+        return tbl68[arg163.Name] or tbl68.Other
+    end):Validator(function(arg164)
+        return not arg164:GetAttribute("IsDisabled")
     end)
-    t70.Berries = EspManager.new("Berries"):SetObjects(t5.Berries):SetAlwaysValidate():SetEspColor(color3_4):Validator(function(p235)
-        local v980, v981, v982 = pairs(p235:GetAttributes())
-        local v983, v984 = v980(v981, v982)
+    tbl67.Berries = EspManager.new("Berries"):SetObjects(tbl3.Berries):SetAlwaysValidate():SetEspColor(color3_4):Validator(function(arg165)
+        local val118, val119, val120 = pairs(arg165:GetAttributes())
+        local val121, val122 = val118(val119, val120)
 
-        if v983 then
-            t70.Berries:SetInstanceName(p235, v984)
+        if val121 then
+            tbl67.Berries:SetInstanceName(arg165, val122)
 
             return true
         end
     end)
-    if not u55:IsBlacklistedExecutor() then
+    if not Module:IsBlacklistedExecutor() then
         Visual:AddSection("Aimbot Nearest")
         Visual:AddToggle({
 			"Aimbot Gun",
 			false,
 			{
-				v38,
+				_ENV,
 				"AimBot_Gun"
 			}
 		})
@@ -4165,7 +4156,7 @@ function t7.LoadLibrary(p206)
 			"Aimbot Tap",
 			false,
 			{
-				v38,
+				_ENV,
 				"AimBot_Tap"
 			}
 		})
@@ -4173,7 +4164,7 @@ function t7.LoadLibrary(p206)
 			"Aimbot Skills",
 			false,
 			{
-				v38,
+				_ENV,
 				"AimBot_Skills"
 			}
 		})
@@ -4181,7 +4172,7 @@ function t7.LoadLibrary(p206)
 			"Ignore Mobs",
 			true,
 			{
-				v46,
+				settings,
 				"NoAimMobs"
 			}
 		})
@@ -4203,7 +4194,7 @@ function t7.LoadLibrary(p206)
 			"ESP Flowers",
 			false,
 			{
-				t70.Flowers,
+				tbl67.Flowers,
 				"Enabled"
 			},
 			"Esp-Flower"
@@ -4214,7 +4205,7 @@ function t7.LoadLibrary(p206)
 			"ESP My Boat",
 			false,
 			{
-				t70.MyBoat,
+				tbl67.MyBoat,
 				"Enabled"
 			},
 			"Esp-MyBoat"
@@ -4224,7 +4215,7 @@ function t7.LoadLibrary(p206)
 		"ESP Players",
 		false,
 		{
-			t70.Players,
+			tbl67.Players,
 			"Enabled"
 		},
 		"Esp-Players"
@@ -4233,7 +4224,7 @@ function t7.LoadLibrary(p206)
 		"ESP Fruits",
 		false,
 		{
-			t70.Fruits,
+			tbl67.Fruits,
 			"Enabled"
 		},
 		"Esp-Fruits"
@@ -4242,7 +4233,7 @@ function t7.LoadLibrary(p206)
 		"ESP Berries",
 		false,
 		{
-			t70.Berries,
+			tbl67.Berries,
 			"Enabled"
 		},
 		"Esp-Berry"
@@ -4251,7 +4242,7 @@ function t7.LoadLibrary(p206)
 		"ESP Chests",
 		false,
 		{
-			t70.Chests,
+			tbl67.Chests,
 			"Enabled"
 		},
 		"Esp-Chests"
@@ -4260,7 +4251,7 @@ function t7.LoadLibrary(p206)
 		"ESP Islands",
 		false,
 		{
-			t70.Islands,
+			tbl67.Islands,
 			"Enabled"
 		},
 		"Esp-Island"
@@ -4277,77 +4268,77 @@ function t7.LoadLibrary(p206)
     Visual:AddButton({
 		"Remove Portal Dash Cooldown",
 		function()
-        local v985 = LocalPlayer.Backpack:FindFirstChild("Portal-Portal") or LocalPlayer.Character:FindFirstChild("Portal-Portal")
+        local portalPortal = LocalPlayer.Backpack:FindFirstChild("Portal-Portal") or LocalPlayer.Character:FindFirstChild("Portal-Portal")
 
-        if v985 then
+        if portalPortal then
             local _next = next
-            local v987, v988 = getconnections(v985.Activated)
+            local val123, val124 = getconnections(portalPortal.Activated)
 
             while true do
-                local v989
+                local val125
 
-                v988, v989 = _next(v987, v988)
+                val124, val125 = _next(val123, val124)
 
-                if not v988 then
+                if not val124 then
                     break
                 end
 
-                if #debug.getupvalues(v989.Function) == 9 then
+                if #debug.getupvalues(val125.Function) == 9 then
                     while true do
                         local elapsed = task.wait()
 
                         if elapsed then
-                            elapsed = v985 and v985:IsDescendantOf(game)
+                            elapsed = portalPortal and portalPortal:IsDescendantOf(game)
                         end
 
                         if not elapsed then
                             break
                         end
 
-                        debug.setupvalue(v989.Function, 2, 0)
+                        debug.setupvalue(val125.Function, 2, 0)
                     end
                 end
             end
         end
     end
 	})
-    local Shop = v276.Shop
-    for _, v in ipairs(u55.Shop) do
+    local Shop = loadTabsResult.Shop
+    for _, v in ipairs(Module.Shop) do
         Shop:AddSection(v[1])
 
-        for _, v2 in ipairs(v[2]) do
-            local v361 = v2
-            local v362 = v361[2]
+        for _, item in ipairs(v[2]) do
+            local val126 = item
+            local val127 = val126[2]
 
-            if type(v361[2]) == "table" then
-                function v362()
-                    FireRemote(unpack(v361[2]))
+            if type(val126[2]) == "table" then
+                function val127()
+                    FireRemote(unpack(val126[2]))
                 end
             end
 
             Shop:AddButton({
-				v361[1],
-				v362
+				val126[1],
+				val127
 			})
         end
     end
-    local Misc = v276.Misc
-    local u364
-    local function v365(p236, p237)
-        for i = #p237, 2, -1 do
-            local v994 = p236:NextInteger(1, i)
-            local v995 = p237[v994]
-            local v996 = p237[i]
+    local Misc = loadTabsResult.Misc
+    local val128
+    local function helper19(arg166, arg272)
+        for i = #arg272, 2, -1 do
+            local nextIntegerResult = arg166:NextInteger(1, i)
+            local val129 = arg272[nextIntegerResult]
+            local val130 = arg272[i]
 
-            p237[i] = v995
-            p237[v994] = v996
+            arg272[i] = val129
+            arg272[nextIntegerResult] = val130
         end
     end
-    local function v366(p238)
-        local v998 = string.reverse(p238)
-        local num = tonumber("-" .. string.sub(v998, -2, -1))
-        local v1000 = string.sub(v998, 1, -3)
-        local t73 = {
+    local function helper20(arg167)
+        local reverse2 = string.reverse(arg167)
+        local num = tonumber("-" .. string.sub(reverse2, -2, -1))
+        local sub2 = string.sub(reverse2, 1, -3)
+        local tbl70 = {
 			"0",
 			"1",
 			"2",
@@ -4359,7 +4350,7 @@ function t7.LoadLibrary(p206)
 			"8",
 			"9"
 		}
-        local t74 = {
+        local tbl71 = {
 			"a",
 			"b",
 			"c",
@@ -4381,7 +4372,7 @@ function t7.LoadLibrary(p206)
 			"t",
 			"u"
 		}
-        local t75 = {
+        local tbl72 = {
 			8,
 			4,
 			4,
@@ -4390,40 +4381,40 @@ function t7.LoadLibrary(p206)
 		}
         local random = Random.new(num)
 
-        v365(random, t73)
-        v365(random, t74)
+        helper19(random, tbl70)
+        helper19(random, tbl71)
 
-        for i = 1, #t73 do
-            local v1006 = t73[i]
-            local v1007 = string.gsub(v1000, t74[i + 10], v1006 .. v1006)
+        for i = 1, #tbl70 do
+            local val131 = tbl70[i]
+            local gsub5 = string.gsub(sub2, tbl71[i + 10], val131 .. val131)
 
-            v1000 = string.gsub(v1007, t74[i], v1006)
+            sub2 = string.gsub(gsub5, tbl71[i], val131)
         end
 
-        local t76 = {}
-        local n12 = 1
+        local tbl73 = {}
+        local num14 = 1
 
-        for i = 1, #t75 do
-            table.insert(t76, (string.sub(v1000, n12, n12 + t75[i] - 1)))
-            n12 += t75[i]
+        for i = 1, #tbl72 do
+            table.insert(tbl73, (string.sub(sub2, num14, num14 + tbl72[i] - 1)))
+            num14 += tbl72[i]
         end
 
-        return string.lower(table.concat(t76, "-"))
+        return string.lower(table.concat(tbl73, "-"))
     end
-    local function v367(p239)
-        local v1017 = p239:gsub("\n", ""):gsub("```", ""):gsub("`", "")
+    local function helper21(arg168)
+        local gsubResult = arg168:gsub("\n", ""):gsub("```", ""):gsub("`", "")
 
-        if string.sub(v1017, 1, 5) ~= "redz-" then
-            return string.sub(v1017, 6, -1)
+        if string.sub(gsubResult, 1, 5) ~= "redz-" then
+            return string.sub(gsubResult, 6, -1)
         end
 
-        return v366(string.sub(v1017, 6, -1))
+        return helper20(string.sub(gsubResult, 6, -1))
     end
-    local function v368(p240)
-        ReplicatedStorage.__ServerBrowser:InvokeServer("teleport", p240)
+    local function helper22(arg169)
+        ReplicatedStorage.__ServerBrowser:InvokeServer("teleport", arg169)
     end
-    local u369
-    local u370
+    local val132
+    local val133
     if IsOwner then
         Misc:AddSection("Executor")
         Misc:AddButton({
@@ -4433,21 +4424,21 @@ function t7.LoadLibrary(p206)
         end
 		})
     end
-    if u55.JobIds then
+    if Module.JobIds then
         Misc:AddSection("Join Server")
         Misc:AddTextBox({
 			"Input Job Id",
 			"1",
 			true,
-			v368,
+			helper22,
 			"JobId"
-		}).OnChanging = function(p241)
-            return v367(p241)
+		}).OnChanging = function(arg170)
+            return helper21(arg170)
         end
         Misc:AddButton({
 			"Join Clipboard",
 			function()
-            v368((getclipboard or fromclipboard)())
+            helper22((getclipboard or fromclipboard)())
         end
 		})
     end
@@ -4461,7 +4452,7 @@ function t7.LoadLibrary(p206)
 		},
 		"Up",
 		{
-			v46,
+			settings,
 			"FarmMode"
 		},
 		"S-FarmMode"
@@ -4472,9 +4463,9 @@ function t7.LoadLibrary(p206)
 		30,
 		1,
 		15,
-		function(p242)
-        v46.FarmPos = Vector3.new(0, p242, 0)
-        v46.FarmDistance = p242
+		function(arg171)
+        settings.FarmPos = Vector3.new(0, arg171, 0)
+        settings.FarmDistance = arg171
     end,
 		"S-Distance"
 	})
@@ -4485,7 +4476,7 @@ function t7.LoadLibrary(p206)
 		5,
 		200,
 		{
-			v46,
+			settings,
 			"TweenSpeed"
 		},
 		"S-TweenSpeed"
@@ -4497,7 +4488,7 @@ function t7.LoadLibrary(p206)
 		10,
 		250,
 		{
-			v46,
+			settings,
 			"BringDistance"
 		},
 		"S-BringDistance"
@@ -4506,7 +4497,7 @@ function t7.LoadLibrary(p206)
 		"Bring Mobs",
 		true,
 		{
-			v46,
+			settings,
 			"BringMobs"
 		},
 		"S-BringMobs"
@@ -4515,7 +4506,7 @@ function t7.LoadLibrary(p206)
 		"Auto Haki",
 		true,
 		{
-			v46,
+			settings,
 			"AutoBuso"
 		},
 		"S-AutoBuso"
@@ -4524,7 +4515,7 @@ function t7.LoadLibrary(p206)
 		"Auto Attack",
 		true,
 		{
-			v46,
+			settings,
 			"AutoClick"
 		},
 		"S-AutoClick"
@@ -4533,7 +4524,7 @@ function t7.LoadLibrary(p206)
 		"Auto Shoot",
 		false,
 		{
-			v46,
+			settings,
 			"AutoShoot"
 		},
 		"S-AutoShoot"
@@ -4542,7 +4533,7 @@ function t7.LoadLibrary(p206)
 		"Take Quest Debounce",
 		false,
 		{
-			p206.Managers.QuestManager,
+			arg141.Managers.QuestManager,
 			"takeQuestDebounce"
 		},
 		"S-QuestDenounce",
@@ -4551,45 +4542,45 @@ function t7.LoadLibrary(p206)
     Misc:AddSection("Codes")
     Misc:AddButton({
 		"Redeem all Codes",
-		t6.AllCodes
+		tbl4.AllCodes
 	})
     Misc:AddSection("Server")
     Misc:AddButton({
 		"Server Hop",
 		function()
-        u55:ServerHop()
+        Module:ServerHop()
     end
 	})
     Misc:AddButton({
 		"Rejoin",
 		function()
-        u55.Rejoin()
+        Module.Rejoin()
     end
 	})
     Misc:AddSection("Team")
     Misc:AddButton({
 		"Join Pirates Team",
-		t4.Pirates
+		tbl2.Pirates
 	})
     Misc:AddButton({
 		"Join Marines Team",
-		t4.Marines
+		tbl2.Marines
 	})
     Misc:AddSection("Race")
     Misc:AddToggle({
 		"Auto Active Race V3",
 		false,
-		function(p243)
-        v38.ActiveRaceV3 = p243
+		function(arg172)
+        _ENV.ActiveRaceV3 = arg172
 
-        while v38.ActiveRaceV3 do
+        while _ENV.ActiveRaceV3 do
             if Data.Race:FindFirstChild("Evolved") then
                 Remotes.CommE:FireServer("ActivateAbility")
             else
                 Data.Race.ChildAdded:Wait()
             end
 
-            task.wait(not v46.SmoothMode and 1 or 2.5)
+            task.wait(not settings.SmoothMode and 1 or 2.5)
         end
     end,
 		"S-RaceV3"
@@ -4597,13 +4588,13 @@ function t7.LoadLibrary(p206)
     Misc:AddToggle({
 		"Auto Active Race V4",
 		false,
-		function(p244)
-        v38.ActiveRaceV4 = p244
+		function(arg173)
+        _ENV.ActiveRaceV4 = arg173
 
-        while v38.ActiveRaceV4 do
-            local v1012 = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-            local RaceTransformed = v1012:FindFirstChild("RaceTransformed")
-            local RaceEnergy = v1012:FindFirstChild("RaceEnergy")
+        while _ENV.ActiveRaceV4 do
+            local val134 = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local RaceTransformed = val134:FindFirstChild("RaceTransformed")
+            local RaceEnergy = val134:FindFirstChild("RaceEnergy")
 
             if RaceEnergy then
                 RaceEnergy = RaceEnergy.Value >= 1
@@ -4614,14 +4605,14 @@ function t7.LoadLibrary(p206)
             end
 
             if RaceEnergy then
-                local v1015 = LocalPlayer.Backpack:FindFirstChild("Awakening") or v1012:FindFirstChild("Awakening")
+                local awakening = LocalPlayer.Backpack:FindFirstChild("Awakening") or val134:FindFirstChild("Awakening")
 
-                if v1015:FindFirstChild("RemoteFunction") then
-                    v1015.RemoteFunction:InvokeServer(true)
+                if awakening:FindFirstChild("RemoteFunction") then
+                    awakening.RemoteFunction:InvokeServer(true)
                 end
             end
 
-            task.wait(not v46.SmoothMode and 0.5 or 1)
+            task.wait(not settings.SmoothMode and 0.5 or 1)
         end
     end,
 		"S-RaceV4"
@@ -4646,18 +4637,18 @@ function t7.LoadLibrary(p206)
         LocalPlayer.PlayerGui.Main.Titles.Visible = true
     end
 	})
-    if not u55:IsBlacklistedExecutor() then
+    if not Module:IsBlacklistedExecutor() then
         Misc:AddSection("Local-Player")
         Misc:AddToggle({
 			"Enable Speed Hack",
 			false,
-			function(p245)
-            if p245 then
-                u55.Hooking:EnableBypass()
+			function(arg174)
+            if arg174 then
+                Module.Hooking:EnableBypass()
             end
 
-            v38.WalkSpeedBypass = p245 and u370 or false
-            u369 = p245
+            _ENV.WalkSpeedBypass = arg174 and val133 or false
+            val132 = arg174
         end,
 			"M-WalkSpeed:A"
 		})
@@ -4667,9 +4658,9 @@ function t7.LoadLibrary(p206)
 			300,
 			5,
 			150,
-			function(p246)
-            v38.WalkSpeedBypass = u369 and p246 or false
-            u370 = p246
+			function(arg175)
+            _ENV.WalkSpeedBypass = val132 and arg175 or false
+            val133 = arg175
         end,
 			"M-WalkSpeed:B"
 		})
@@ -4688,7 +4679,7 @@ function t7.LoadLibrary(p206)
 		"Smooth Farm Mode",
 		false,
 		{
-			v46,
+			settings,
 			"SmoothMode"
 		},
 		"SmoothFarm",
@@ -4697,16 +4688,16 @@ function t7.LoadLibrary(p206)
     Misc:AddToggle({
 		"Remove Damage",
 		false,
-		function(p247)
-        ReplicatedStorage.Assets.GUI.DamageCounter.Enabled = not p247
+		function(arg176)
+        ReplicatedStorage.Assets.GUI.DamageCounter.Enabled = not arg176
     end,
 		"M-DamageCounter"
 	})
     Misc:AddToggle({
 		"Remove Notifications",
 		false,
-		function(p248)
-        LocalPlayer.PlayerGui.Notifications.Enabled = not p248
+		function(arg177)
+        LocalPlayer.PlayerGui.Notifications.Enabled = not arg177
     end,
 		"M-Notifications"
 	})
@@ -4714,46 +4705,46 @@ function t7.LoadLibrary(p206)
     Misc:AddToggle({
 		"Walk On Water",
 		true,
-		function(p249)
-        v38.WalkOnWater = p249
+		function(arg178)
+        _ENV.WalkOnWater = arg178
 
-        local v1019 = Map:WaitForChild("WaterBase-Plane", 9000000000)
-        local v1020 = u364 or v1019.Size
-        local vector3 = Vector3.new(v1020.X, 113, v1020.Z)
+        local waterBasePlane = Map:WaitForChild("WaterBase-Plane", 9000000000)
+        local val135 = val128 or waterBasePlane.Size
+        local vector3 = Vector3.new(val135.X, 113, val135.Z)
 
-        u364 = v1020
+        val128 = val135
 
-        while task.wait(0.25) and v38.WalkOnWater do
-            if u55.IsAlive(LocalPlayer.Character) and LocalPlayer.Character.Humanoid.Sit then
-                v1019.Size = v1020
+        while task.wait(0.25) and _ENV.WalkOnWater do
+            if Module.IsAlive(LocalPlayer.Character) and LocalPlayer.Character.Humanoid.Sit then
+                waterBasePlane.Size = val135
             else
-                v1019.Size = vector3
+                waterBasePlane.Size = vector3
             end
         end
 
-        v1019.Size = v1020
+        waterBasePlane.Size = val135
     end,
 		"M-WalkOnWater"
 	})
     Misc:AddToggle({
 		"Anti AFK",
 		true,
-		function(p250)
-        v38.AntiAFK = p250
+		function(arg179)
+        _ENV.AntiAFK = arg179
 
-        while v38.AntiAFK do
+        while _ENV.AntiAFK do
             VirtualUser:CaptureController()
 
-            local v1027 = VirtualUser
-            local t77 = { Vector2.new(math.huge, math.huge) }
+            local val136 = VirtualUser
+            local tbl74 = { Vector2.new(math.huge, math.huge) }
 
-            v1027:ClickButton1(v1(t77))
+            val136:ClickButton1(unpackValues(tbl74))
             task.wait(600)
         end
     end,
 		"M-AntiAFK"
 	})
-    local Items = v276.Items
+    local Items = loadTabsResult.Items
     if Sea == 3 then
         Items:AddSection("Dragon Dojo")
         Toggle(Items, {
@@ -4773,10 +4764,10 @@ function t7.LoadLibrary(p206)
 			"Auto Elite Hunter",
 			"Automatically completes Elite Hunter quests"
 		}, "EliteHunter")
-        Toggle(Items, {
+   --[[     Toggle(Items, {
 			"Auto Rip Indra",
 			"Activates the plates and summons Rip Indra"
-		}, "RipIndra")
+		}, "RipIndra")]]
         Toggle(Items, {
 			"Auto Cake Prince",
 			"Automatically summons the Cake Prince"
@@ -4835,7 +4826,7 @@ function t7.LoadLibrary(p206)
 			"Auto Start [ Fully ]",
 			true,
 			{
-				v46,
+				settings,
 				"StartLaw"
 			},
 			"S-RaidLaw",
@@ -4845,14 +4836,14 @@ function t7.LoadLibrary(p206)
         Items:AddToggle({
 			"Auto Buy Legendary Sword",
 			false,
-			function(p251)
-            v38.LegendSword = p251
+			function(arg180)
+            _ENV.LegendSword = arg180
 
-            while task.wait() and v38.LegendSword do
-                local v1034 = FireRemote("LegendarySwordDealer", "1")
+            while task.wait() and _ENV.LegendSword do
+                local result32 = FireRemote("LegendarySwordDealer", "1")
 
-                if type(v1034) == "string" then
-                    if Unlocked[v1034] then
+                if type(result32) == "string" then
+                    if Unlocked[result32] then
                         task.wait(13500)
                     elseif Beli.Value >= 2000000 then
                         FireRemote("LegendarySwordDealer", "2")
@@ -4911,7 +4902,7 @@ function t7.LoadLibrary(p206)
 		"Auto Berry Hop",
 		false,
 		{
-			v46,
+			settings,
 			"BerryHop"
 		},
 		"S-BerryHop"
@@ -4921,18 +4912,18 @@ function t7.LoadLibrary(p206)
         Items:AddToggle({
 			"Auto Barista Cousin",
 			false,
-			function(p252)
-            v38.barista_cousin = p252
+			function(arg181)
+            _ENV.barista_cousin = arg181
 
-            while v38.barista_cousin do
-                local v1036, _ = FireRemote("ColorsDealer", "1")
+            while _ENV.barista_cousin do
+                local response, _ = FireRemote("ColorsDealer", "1")
 
-                if type(v1036) == "string" then
-                    local v1038 = FireRemote("ColorsDealer", "2")
+                if type(response) == "string" then
+                    local result33 = FireRemote("ColorsDealer", "2")
 
-                    if v1038 == 1 or v1038 == 2 then
+                    if result33 == 1 or result33 == 2 then
                         task.wait(250)
-                    elseif v1038 == 0 then
+                    elseif result33 == 0 then
                         Beli:GetPropertyChangedSignal("Value"):Wait()
                     end
                 else
@@ -4944,158 +4935,158 @@ function t7.LoadLibrary(p206)
 		})
     end
 end
-function t7.StartFarm(_)
-    if not v38.loadedFarm then
-        v38.loadedFarm = true
-        task.spawn(u55.RunFunctions.FarmQueue, v43)
+function Core2.StartFarm(_)
+    if not _ENV.loadedFarm then
+        _ENV.loadedFarm = true
+        task.spawn(Module.RunFunctions.FarmQueue, rzFarmFunctions)
     end
 end
-function t7.StartFunctions(p254)
-    local t78 = {}
+function Core2.StartFunctions(arg182)
+    local Shared = {}
 
-    table.clear(v42)
-    t78.value1 = {}
+    table.clear(rzFunctions)
+    Shared.OptionIndex = {}
 
-    local function v375(p255, p256, p257)
-        if p257 ~= false then
-            local t79 = {
-				Name = p255,
-				Function = p256
+    local function NewOptionQueue(arg183, arg273, arg317)
+        if arg317 ~= false then
+            local tbl75 = {
+				Name = arg183,
+				Function = arg273
 			}
 
-            t78.value1[p255] = p256
-            table.insert(v42, t79)
+            Shared.OptionIndex[arg183] = arg273
+            table.insert(rzFunctions, tbl75)
         end
     end
 
-    t78.value2 = p254.Managers.QuestManager
+    Shared.QuestManager = arg182.Managers.QuestManager
 
-    local ItemsManager = p254.Managers.ItemsManager
+    local ItemsManager = arg182.Managers.ItemsManager
 
-    t78.value3 = p254.Managers.FarmManager
-    t78.value4 = p254.Managers.RaidManager
-    t78.value5 = p254.Managers.SeaManager
-    t78.value6 = p254.Managers.TweenManager
-    t78.value7 = u55.GameData.MaxMastery
-    t78.value8 = u55.GameData.MaxLevel
-    t78.value9 = u55.GameData.Sea
-    t78.value10 = u55.IsAlive
+    Shared.FarmManager = arg182.Managers.FarmManager
+    Shared.RaidManager = arg182.Managers.RaidManager
+    Shared.SeaManager = arg182.Managers.SeaManager
+    Shared.TweenManager = arg182.Managers.TweenManager
+    Shared.MaxMastery = Module.GameData.MaxMastery
+    Shared.MaxLevel = Module.GameData.MaxLevel
+    Shared.Sea = Module.GameData.Sea
+    Shared.IsAlive = Module.IsAlive
 
-    local Inventory = u55.Inventory
+    local Inventory = Module.Inventory
 
-    t78.value11 = u55.EquipTool
-    t78.value12 = u55.FireRemote
-    t78.value13 = Inventory.Unlocked
-    t78.value14 = Inventory.Count
-    t78.value15 = Inventory.Mastery
-    t78.value16 = Inventory.Items
-    t78.value17 = u55.Enemies.IsSpawned
-    t78.value18 = u55.EnemySpawned
-    t78.value19 = u55.EnemyLocations
-    t78.value20 = t78.value3.Enemies.Elites
-    t78.value21 = t78.value3.Enemies.Bones
-    t78.value22 = t78.value3.Enemies.Katakuri
-    t78.value23 = t78.value3.Enemies.Ectoplasm
-    t78.value24 = t78.value3.attack
-    t78.value25 = ItemsManager.CursedDualKatana
-    t78.value26 = ItemsManager.DojoTrainer
-    t78.value27 = Vector3.yAxis * 3
-    t78.value28 = Vector3.yAxis * 5
-    t78.value29 = Vector3.yAxis * 50
-    t78.value30 = Vector3.yAxis * -10
-    t78.value31 = CFrame.new(-1926, 13, 1738)
-    t78.value32 = CFrame.new(-5556, 300, -2988)
-    t78.value33 = CFrame.new(914, 126, 33100)
-    t78.value34 = CFrame.new(-5410, 314, -2628)
-    t78.value35 = CFrame.new(-5561, 314, -2663)
-    t78.value36 = CFrame.new(-8932.85, 142.87, 6063.31)
-    t78.value37 = CFrame.new(1346, 37, -1329)
-    t78.value38 = CFrame.new(-2103, 70, -12165)
-    t78.value39 = CFrame.new(224, 25, -12771)
-    t78.value40 = CFrame.new(3779, 16, -3500)
-    t78.value41 = CFrame.new(912, 186, 33591)
-    t78.value42 = CFrame.new(-9513, 164, 5786)
-    t78.value43 = CFrame.new(-1461, 30, -51)
-    t78.value44 = CFrame.new(5864, 1209, 810)
-    t78.value45 = CFrame.new(5251, 20, 454)
-    t78.value46 = CFrame.new(-7739, 5657, -2289)
-    t78.value47 = CFrame.new(-690, 15, 1583)
-    t78.value48 = CFrame.new(-26952, 21, 329)
-    t78.value49 = CFrame.new(-462, 73, 300)
-    t78.value50 = CFrame.new(2289, 15, 808)
-    t78.value51 = CFrame.new(-2777, 73, -3570)
-    t78.value52 = CFrame.new(-1988, 124, -70)
-    t78.value53 = CFrame.new(-12512, 340, -9872)
-    t78.value54 = CFrame.new(-12445, 332, -7676)
-    t78.value55 = CFrame.new(-16252, 153, 1394)
-    t78.value56 = CFrame.new(-16649, 107, 1293)
-    t78.value57 = Net:WaitForChild("RF/InteractSubclassQuest")
+    Shared.EquipTool = Module.EquipTool
+    Shared.FireRemote = Module.FireRemote
+    Shared.Unlocked = Inventory.Unlocked
+    Shared.Count = Inventory.Count
+    Shared.Mastery = Inventory.Mastery
+    Shared.Items = Inventory.Items
+    Shared.IsSpawned = Module.Enemies.IsSpawned
+    Shared.EnemySpawned = Module.EnemySpawned
+    Shared.EnemyLocations = Module.EnemyLocations
+    Shared.Elites = Shared.FarmManager.Enemies.Elites
+    Shared.Bones = Shared.FarmManager.Enemies.Bones
+    Shared.Katakuri = Shared.FarmManager.Enemies.Katakuri
+    Shared.Ectoplasm = Shared.FarmManager.Enemies.Ectoplasm
+    Shared.Attack = Shared.FarmManager.attack
+    Shared.CursedDualKatana = ItemsManager.CursedDualKatana
+    Shared.DojoTrainer = ItemsManager.DojoTrainer
+    Shared.OffsetUp3 = Vector3.yAxis * 3
+    Shared.OffsetUp5 = Vector3.yAxis * 5
+    Shared.OffsetUp50 = Vector3.yAxis * 50
+    Shared.OffsetDown10 = Vector3.yAxis * -10
+    Shared.Position = CFrame.new(-1926, 13, 1738)
+    Shared.Position2 = CFrame.new(-5556, 300, -2988)
+    Shared.Position3 = CFrame.new(914, 126, 33100)
+    Shared.Position4 = CFrame.new(-5410, 314, -2628)
+    Shared.Position5 = CFrame.new(-5561, 314, -2663)
+    Shared.Position6 = CFrame.new(-8932.85, 142.87, 6063.31)
+    Shared.Position7 = CFrame.new(1346, 37, -1329)
+    Shared.Position8 = CFrame.new(-2103, 70, -12165)
+    Shared.Position9 = CFrame.new(224, 25, -12771)
+    Shared.Position10 = CFrame.new(3779, 16, -3500)
+    Shared.Position11 = CFrame.new(912, 186, 33591)
+    Shared.Position12 = CFrame.new(-9513, 164, 5786)
+    Shared.Position13 = CFrame.new(-1461, 30, -51)
+    Shared.Position14 = CFrame.new(5864, 1209, 810)
+    Shared.Position15 = CFrame.new(5251, 20, 454)
+    Shared.Position16 = CFrame.new(-7739, 5657, -2289)
+    Shared.Position17 = CFrame.new(-690, 15, 1583)
+    Shared.Position18 = CFrame.new(-26952, 21, 329)
+    Shared.Position19 = CFrame.new(-462, 73, 300)
+    Shared.Position20 = CFrame.new(2289, 15, 808)
+    Shared.Position21 = CFrame.new(-2777, 73, -3570)
+    Shared.Position22 = CFrame.new(-1988, 124, -70)
+    Shared.Position23 = CFrame.new(-12512, 340, -9872)
+    Shared.Position24 = CFrame.new(-12445, 332, -7676)
+    Shared.Position25 = CFrame.new(-16252, 153, 1394)
+    Shared.Position26 = CFrame.new(-16649, 107, 1293)
+    Shared.InteractSubclassQuest = Net:WaitForChild("RF/InteractSubclassQuest")
     Net:WaitForChild("RF/InteractDragonQuest")
-    t78.value58 = Net:WaitForChild("RF/StartSubclassQuest")
-    t78.value59 = Net:WaitForChild("RF/FruitCustomizerRF")
+    Shared.StartSubclassQuest = Net:WaitForChild("RF/StartSubclassQuest")
+--    Shared.FruitCustomizerRF = Net:WaitForChild("RF/FruitCustomizerRF")
     Net:WaitForChild("RF/JuiceNetworkRF")
-    t78.value60 = Net:WaitForChild("RF/DragonHunter")
-    t78.value61 = Net:WaitForChild("RF/ClaimBerry")
+    Shared.DragonHunter = Net:WaitForChild("RF/DragonHunter")
+    Shared.ClaimBerry = Net:WaitForChild("RF/ClaimBerry")
 
-    local t80 = {
-		__index = function(p258, p259)
-        rawset(p258, p259, NPCs:FindFirstChild(p259) or ReplicatedStorage.NPCs:FindFirstChild(p259))
+    local tbl76 = {
+		__index = function(arg184, arg274)
+        rawset(arg184, arg274, NPCs:FindFirstChild(arg274) or ReplicatedStorage.NPCs:FindFirstChild(arg274))
 
-        return (rawget(p258, p259))
+        return (rawget(arg184, arg274))
     end
 	}
 
-    t78.value62 = Net:WaitForChild("RE/TouchKitsuneStatue")
+    Shared.TouchKitsuneStatue = Net:WaitForChild("RE/TouchKitsuneStatue")
     Net:WaitForChild("RE/CollectBlueEmber")
     Net:WaitForChild("RE/DragonDojoEmber")
-    t78.value63 = Remotes:WaitForChild("SubclassNetwork")
+    Shared.SubclassNetwork = Remotes:WaitForChild("SubclassNetwork")
     Remotes:WaitForChild("QuestUpdate")
-    t78.value64 = setmetatable({}, t80)
-    t78.value65 = nil
-    t78.value66 = nil
-    t78.value67 = nil
-    t78.value68 = nil
-    t78.value69 = nil
-    t78.value70 = nil
-    t78.value71 = nil
-    t78.value72 = nil
-    t78.value73 = nil
-    t78.value74 = nil
-    t78.value75 = nil
-    t78.value76 = nil
-    t78.value77 = nil
-    t78.value78 = nil
-    t78.value79 = nil
-    t78.value80 = nil
-    t78.value81 = nil
-    t78.value82 = 0
-    t78.value83 = 0
-    t78.value84 = 0
-    t78.value85 = 0
-    t78.value86 = {
+    Shared.Proxy = setmetatable({}, tbl76)
+    Shared.State = nil
+    Shared.State2 = nil
+    Shared.State3 = nil
+    Shared.State4 = nil
+    Shared.State5 = nil
+    Shared.State6 = nil
+    Shared.State7 = nil
+    Shared.State8 = nil
+    Shared.State9 = nil
+    Shared.State10 = nil
+    Shared.State11 = nil
+    Shared.State12 = nil
+    Shared.State13 = nil
+    Shared.State14 = nil
+    Shared.State15 = nil
+    Shared.State16 = nil
+    Shared.State17 = nil
+    Shared.Counter = 0
+    Shared.Counter2 = 0
+    Shared.Counter3 = 0
+    Shared.Counter4 = 0
+    Shared.Cache = {
 		"Forest Pirate",
 		"Mythological Pirate"
 	}
-    t78.value87 = {
+    Shared.Cache2 = {
 		"Stone",
 		"Hydra Leader",
 		"Kilo Admiral",
 		"Captain Elephant",
 		"Beautiful Pirate"
 	}
-    t78.value88 = {
+    Shared.Cache3 = {
 		"Yama",
 		"Tushita"
 	}
-    t78.value89 = {
+    Shared.Cache4 = {
 		Tushita = "Good",
 		Yama = "Evil"
 	}
-    t78.value90 = -1
-    t78.value91 = nil
-    t78.value92 = {}
-    t78.value93 = {}
-    t78.value94 = {
+    Shared.Counter5 = -1
+    Shared.Cache5 = nil
+    Shared.Cache6 = {}
+    Shared.Cache7 = {}
+    Shared.Cache8 = {
 		SecondSea = {
 			"PirateBrigade",
 			"Sea Beast"
@@ -5112,56 +5103,56 @@ function t7.StartFunctions(p254)
 			"FishBoat"
 		}
 	}
-    t78.value95 = {
+    Shared.Cache9 = {
 		SegmentVector = Vector3.yAxis * 75,
 		Segment = nil
 	}
 
-    local t81 = {
+    local tbl77 = {
 		CFrame.new(-13335, 380, -7660),
 		CFrame.new(-13138, 380, -7713),
 		CFrame.new(-13298, 380, -7876),
 		CFrame.new(-13512, 380, -7983),
 		CFrame.new(-13632, 380, -7815)
 	}
-    local t82 = {
+    local tbl78 = {
 		CFrame.new(778, 110, 1129),
 		CFrame.new(1018, 110, 1128),
 		CFrame.new(1020, 110, 1366),
 		CFrame.new(1016, 110, 1115)
 	}
 
-    t78.value96 = {
-		["Forest Pirate"] = t81,
-		["Swan Pirate"] = t82
+    Shared.Cache10 = {
+		["Forest Pirate"] = tbl77,
+		["Swan Pirate"] = tbl78
 	}
 
-    local t83 = {
+    local tbl79 = {
 		Tushita = "Good",
 		Yama = "Evil"
 	}
     local _CFrame = CFrame
-    local t84 = {
+    local tbl80 = {
 		Quest = {},
 		Frags = -1
 	}
-    local v384 = _CFrame.new(-710, 382, -11150)
+    local result34 = _CFrame.new(-710, 382, -11150)
     local cFrame = CFrame.new(-12131, 578, -6707)
     local cFrame20 = CFrame.new(-13350, 332, -7645)
-    local t85 = {
+    local tbl81 = {
 		CFrame.new(-12360, 603, -6551),
 		CFrame.new(-12331, 603, -6551)
 	}
 
-    t78.value97 = {
+    Shared.Cache11 = {
 		Quests = {
 			"Yama",
 			"Tushita"
 		},
-		Modes = t83,
-		CurrentQuest = t84,
+		Modes = tbl79,
+		CurrentQuest = tbl80,
 		BoatsDealer = {},
-		CakeQueen = v384,
+		CakeQueen = result34,
 		DoorNpc = cFrame,
 		ForestPirate = cFrame20,
 		Heaven = {
@@ -5172,7 +5163,7 @@ function t7.StartFunctions(p254)
 			"Hell's Messenger",
 			"Cursed Skeleton"
 		},
-		CursedSkeleton = t85,
+		CursedSkeleton = tbl81,
 		OpenedDoor = false
 	}
 
@@ -5190,7 +5181,7 @@ function t7.StartFunctions(p254)
 		Pipes = CFrame.new(-9576, 6, 6230)
 	}
 
-    t78.value98 = {
+    Shared.Cache12 = {
 		RequestQuest = {
 			Context = "RequestQuest"
 		},
@@ -5199,15 +5190,15 @@ function t7.StartFunctions(p254)
 		}
 	}
 
-    local v393 = CreateDictionary({ "Sea Beast" }, true)
+    local result35 = CreateDictionary({ "Sea Beast" }, true)
 
-    t78.value99 = {
+    Shared.Cache13 = {
 		Human = {
 			"Orbitus",
 			"Diamond",
 			"Jeremy"
 		},
-		Shark = v393
+		Shark = result35
 	}
     CreateDictionary({
 		"Human",
@@ -5220,221 +5211,221 @@ function t7.StartFunctions(p254)
 
     local brickColor = BrickColor.new("Lime green")
 
-    t78.value100 = {
+    Shared.Cache14 = {
 		["Really red"] = "Pure Red",
 		Oyster = "Snow White",
 		["Hot pink"] = "Winter Sky",
 		_hotGreen = brickColor
 	}
 
-    local v395 = CreateDictionary({ "Shark" }, true)
-    local v396 = CreateDictionary({ "Terrorshark" }, true)
+    local result36 = CreateDictionary({ "Shark" }, true)
+    local result37 = CreateDictionary({ "Terrorshark" }, true)
     local self2 = setmetatable({}, {
 		__index = function()
         return true
     end
 	})
-    local t86 = {
+    local tbl82 = {
 		["Fool's Gold"] = 20,
 		["Terror Eyes"] = 2,
 		["Electric Wings"] = 8,
 		["Shark Teeth"] = 10
 	}
-    local t87 = {
+    local tbl83 = {
 		["Shark Teeth"] = "Shark",
 		["Terror Eyes"] = "Terrorshark",
 		["Fish Crew Member"] = "Electric Wings"
 	}
-    local t88 = {
-		Terrorshark = v396,
+    local tbl84 = {
+		Terrorshark = result37,
 		_Selected = self2,
-		Materials = t86,
-		Drops = t87
+		Materials = tbl82,
+		Drops = tbl83
 	}
 
-    t78.value101 = {
-		Shipwright = v395,
-		SharkAnchor = t88
+    Shared.Cache15 = {
+		Shipwright = result36,
+		SharkAnchor = tbl84
 	}
 
-    local function v401()
-        if tick() - t78.value82 <= 30 then
-            return t78.value75
+--[[    local function helper23()
+        if tick() - Shared.Counter <= 30 then
+            return Shared.State11
         end
 
-        t78.value82 = tick()
+        Shared.Counter = tick()
 
-        local t89 = {
+        local tbl85 = {
 			Context = "GetSkinsInventory"
 		}
 
-        t78.value75 = t78.value59:InvokeServer(t89)
+        Shared.State11 = Shared.FruitCustomizerRF:InvokeServer(tbl85)
 
-        return t78.value75
-    end
-    local function v402(p260, p261)
-        if p260 then
-            for i = 1, #p260 do
-                p260[i].Name = p261
+        return Shared.State11
+    end]]
+    local function helper24(arg185, arg275)
+        if arg185 then
+            for i = 1, #arg185 do
+                arg185[i].Name = arg275
             end
         end
     end
-    local function v403(p262, p263, p264)
-        if p263 > Level.Value then
+    local function helper25(arg186, arg276, arg318)
+        if arg276 > Level.Value then
             return
         end
 
-        t78.value76 = t78.value3:GetNpcVectorCFrame(p262)
+        Shared.State12 = Shared.FarmManager:GetNpcVectorCFrame(arg186)
 
-        if p264 then
-            local PrimaryPart = p264.PrimaryPart
+        if arg318 then
+            local PrimaryPart = arg318.PrimaryPart
 
-            return LocalPlayer:DistanceFromCharacter(PrimaryPart.Position) >= LocalPlayer:DistanceFromCharacter(t78.value76.Position)
+            return LocalPlayer:DistanceFromCharacter(PrimaryPart.Position) >= LocalPlayer:DistanceFromCharacter(Shared.State12.Position)
         end
 
         return true
     end
-    local function v404(p265)
-        if p265 then
-            p265 = p265.PrimaryPart and p265.PrimaryPart.Anchored
+    local function helper26(arg187)
+        if arg187 then
+            arg187 = arg187.PrimaryPart and arg187.PrimaryPart.Anchored
         end
 
-        return p265
+        return arg187
     end
-    local function v405()
-        if t78.value65 and v404(t78.value65.Parent) then
-            return t78.value65
+    local function helper27()
+        if Shared.State and helper26(Shared.State.Parent) then
+            return Shared.State
         end
         local IslandModel = Map.Waterfall.IslandModel
-        local v1055 = IslandModel:FindFirstChild("Meshes/bambootree", true)
-        local v1056
-        while v1055 do
-            if v404(v1055.Parent) then
-                v402(v1056, "Meshes/bambootree")
-                t78.value65 = v1055
+        local meshesBambootree = IslandModel:FindFirstChild("Meshes/bambootree", true)
+        local val137
+        while meshesBambootree do
+            if helper26(meshesBambootree.Parent) then
+                helper24(val137, "Meshes/bambootree")
+                Shared.State = meshesBambootree
 
-                return v1055
+                return meshesBambootree
             end
 
-            v1056 = v1056 or {}
-            v1055.Name = "Meshes/notbambootree"
-            v1055 = IslandModel:FindFirstChild("Meshes/bambootree", true)
-            table.insert(v1056, v1055)
+            val137 = val137 or {}
+            meshesBambootree.Name = "Meshes/notbambootree"
+            meshesBambootree = IslandModel:FindFirstChild("Meshes/bambootree", true)
+            table.insert(val137, meshesBambootree)
         end
     end
-    local function v406()
-        if t78.value66 and t78.value17(t78.value66) then
-            return t78.value66
+    local function helper28()
+        if Shared.State2 and Shared.IsSpawned(Shared.State2) then
+            return Shared.State2
         end
 
-        for k, _ in pairs(u55.Bosses) do
-            local v1059 = k
+        for k, _ in pairs(Module.Bosses) do
+            local val138 = k
 
-            if t78.value17(v1059) then
-                t78.value66 = v1059
+            if Shared.IsSpawned(val138) then
+                Shared.State2 = val138
 
-                return v1059
+                return val138
             end
         end
     end
-    local function v407(p266, p267, p268)
-        local Quest = p266.Quest
-        local v1064 = p268 ~= true
+    local function TryBossQuest(arg188, arg277, arg319)
+        local Quest = arg188.Quest
+        local val139 = arg319 ~= true
 
-        if v1064 then
-            v1064 = not t78.value2:VerifyQuest(p267) and v46.BossQuest
+        if val139 then
+            val139 = not Shared.QuestManager:VerifyQuest(arg277) and settings.BossQuest
         end
 
-        if v1064 and (Quest and Level.Value >= p266.Level) then
-            t78.value2:StartQuest(Quest[1], Quest[3] or 3, Quest[2])
+        if val139 and (Quest and Level.Value >= arg188.Level) then
+            Shared.QuestManager:StartQuest(Quest[1], Quest[3] or 3, Quest[2])
 
-            return "Getting Boss Quest: " .. p267
+            return "Getting Boss Quest: " .. arg277
         end
 
-        local v1065 = t78.value18(p267)
+        local result38 = Shared.EnemySpawned(arg277)
 
-        if v1065 and v1065.PrimaryPart then
-            return "Defeating Boss: " .. p267, t78.value24(v1065, true)
+        if result38 and result38.PrimaryPart then
+            return "Defeating Boss: " .. arg277, Shared.Attack(result38, true)
         end
 
-        if p266.Position then
-            return "Waiting for: " .. p267, MoveCharacter(p266.Position)
+        if arg188.Position then
+            return "Waiting for: " .. arg277, MoveCharacter(arg188.Position)
         end
 
         return false
     end
-    local function v408()
-        t78.value67 = workspace:FindFirstChild("EmberTemplate")
-        local v1066
-        while t78.value67 do
-            if t78.value67.Part.Position.Y > 0 then
-                v402(v1066, "EmberTemplate")
+    local function helper29()
+        Shared.State3 = workspace:FindFirstChild("EmberTemplate")
+        local val140
+        while Shared.State3 do
+            if Shared.State3.Part.Position.Y > 0 then
+                helper24(val140, "EmberTemplate")
 
                 return true
             end
 
-            v1066 = v1066 or {}
-            t78.value67.Name = "notEmberTemplate"
-            t78.value67 = workspace:FindFirstChild("EmberTemplate")
-            table.insert(v1066, t78.value67)
+            val140 = val140 or {}
+            Shared.State3.Name = "notEmberTemplate"
+            Shared.State3 = workspace:FindFirstChild("EmberTemplate")
+            table.insert(val140, Shared.State3)
         end
     end
 
-    function t78.value102()
-        MoveCharacter(t78.value67.Part.CFrame)
+    function Shared.Value102()
+        MoveCharacter(Shared.State3.Part.CFrame)
 
         return "Collecting Ember"
     end
-    function t78.value103()
-        local v1067 = v405()
+    function Shared.Value103()
+        local result39 = helper27()
 
-        if v1067 then
-            if LocalPlayer:DistanceFromCharacter(v1067.Position) >= 5 then
-                return MoveCharacter(v1067.CFrame)
+        if result39 then
+            if LocalPlayer:DistanceFromCharacter(result39.Position) >= 5 then
+                return MoveCharacter(result39.CFrame)
             end
 
-            if t78.value13["Skull Guitar"] then
+            if Shared.Unlocked["Skull Guitar"] then
                 if VerifyTool("Skull Guitar") then
-                    u55.Hooking:SetTarget(Tree)
-                    t78.value11("Skull Guitar")
-                    u55.FastAttack:ShootInTarget(v1067.Position + t78.value30)
+                    Module.Hooking:SetTarget(Tree)
+                    Shared.EquipTool("Skull Guitar")
+                    Module.FastAttack:ShootInTarget(result39.Position + Shared.OffsetDown10)
 
                     return
                 end
 
-                t78.value12("LoadItem", "Skull Guitar")
+                Shared.FireRemote("LoadItem", "Skull Guitar")
 
                 return
             end
 
-            t78.value11(t78.value5:GetRandomWeapon(), true)
-            u55.UseSkills(v1067, v46.SeaSkills)
+            Shared.EquipTool(Shared.SeaManager:GetRandomWeapon(), true)
+            Module.UseSkills(result39, settings.SeaSkills)
         end
     end
 
-    local function v409(p269)
+    local function helper30(arg189)
         EnableBuso()
-        t78.value5:StopMovingBoat()
+        Shared.SeaManager:StopMovingBoat()
 
-        if p269.Name == "Leviathan Segment" and p269:FindFirstChild("Head") then
-            t78.value11(t78.value5:GetRandomWeapon(), true)
-            u55.UseSkills(p269.Head.CFrame + t78.value95.SegmentVector, v46.SeaSkills)
+        if arg189.Name == "Leviathan Segment" and arg189:FindFirstChild("Head") then
+            Shared.EquipTool(Shared.SeaManager:GetRandomWeapon(), true)
+            Module.UseSkills(arg189.Head.CFrame + Shared.Cache9.SegmentVector, settings.SeaSkills)
 
-            return true, MoveCharacter(p269.Head.CFrame + t78.value95.SegmentVector)
+            return true, MoveCharacter(arg189.Head.CFrame + Shared.Cache9.SegmentVector)
         end
 
-        if p269:FindFirstChild("Head") then
-            local cFrame25 = CFrame.new(p269.Head.Position.X, 60, p269.Head.Position.Z)
+        if arg189:FindFirstChild("Head") then
+            local cFrame25 = CFrame.new(arg189.Head.Position.X, 60, arg189.Head.Position.Z)
 
             EnableBuso()
-            t78.value5:StopMovingBoat()
-            t78.value11(t78.value5:GetRandomWeapon(), true)
-            u55.UseSkills(cFrame25, v46.SeaSkills)
+            Shared.SeaManager:StopMovingBoat()
+            Shared.EquipTool(Shared.SeaManager:GetRandomWeapon(), true)
+            Module.UseSkills(cFrame25, settings.SeaSkills)
 
             return true, MoveCharacter(cFrame25)
         end
     end
-    local function v410()
+    local function helper31()
         if LocalPlayer:FindFirstChild("QuestHaze") then
             return "Yama", 2
         end
@@ -5451,90 +5442,90 @@ function t7.StartFunctions(p254)
             return "Tushita", 3
         end
 
-        if t78.value14["Alucard Fragment"] == 6 then
+        if Shared.Count["Alucard Fragment"] == 6 then
             return "FinalQuest"
         end
 
-        if t78.value90 == t78.value14["Alucard Fragment"] then
-            return unpack(t78.value91)
+        if Shared.Counter5 == Shared.Count["Alucard Fragment"] then
+            return unpack(Shared.Cache5)
         end
 
-        local v1075 = t78.value12("CDKQuest", "Progress")
+        local result40 = Shared.FireRemote("CDKQuest", "Progress")
 
-        for _, v in ipairs(t78.value88) do
-            local v1078
-            local v1079 = t78.value89[v]
-            local v1080 = v1075[v1079]
-            local v1081
-            if v1080 < -2 then
-                v1081 = v
-                v1078 = (v1080 + 2) * -1
-            elseif v1080 >= 0 and v1080 < 3 then
-                t78.value12("CDKQuest", "StartTrial", v1079)
-                v1081 = v
-                v1078 = v1080 + 1
+        for _, v in ipairs(Shared.Cache3) do
+            local val141
+            local val142 = Shared.Cache4[v]
+            local val143 = result40[val142]
+            local val144
+            if val143 < -2 then
+                val144 = v
+                val141 = (val143 + 2) * -1
+            elseif val143 >= 0 and val143 < 3 then
+                Shared.FireRemote("CDKQuest", "StartTrial", val142)
+                val144 = v
+                val141 = val143 + 1
             end
-            if v1081 then
-                t78.value90 = t78.value14["Alucard Fragment"]
-                t78.value91 = {
-					v1081,
-					v1078
+            if val144 then
+                Shared.Counter5 = Shared.Count["Alucard Fragment"]
+                Shared.Cache5 = {
+					val144,
+					val141
 				}
 
-                return v1081, v1078
+                return val144, val141
             end
         end
     end
-    local function v411()
-        local ClosestByTag = u55.Enemies:GetClosestByTag("CakePrince")
+    local function helper32()
+        local ClosestByTag = Module.Enemies:GetClosestByTag("CakePrince")
 
-        if not t78.value2:VerifyQuest(t78.value22[1]) and v403("Cake Quest Giver 2", 2275, ClosestByTag) then
-            t78.value2:StartQuest("CakeQuest2", 2, t78.value76)
+        if not Shared.QuestManager:VerifyQuest(Shared.Katakuri[1]) and helper25("Cake Quest Giver 2", 2275, ClosestByTag) then
+            Shared.QuestManager:StartQuest("CakeQuest2", 2, Shared.State12)
         elseif ClosestByTag and ClosestByTag.PrimaryPart then
-            t78.value24(ClosestByTag, true, true)
+            Shared.Attack(ClosestByTag, true, true)
         else
-            MoveCharacter(t78.value38)
+            MoveCharacter(Shared.Position8)
         end
 
         return true
     end
-    local function v412()
-        local v1083 = v401()
-        local _hotGreen = t78.value100._hotGreen
-        local value73 = t78.value73
+    --[[local function helper33()
+        local result41 = helper23()
+        local _hotGreen = Shared.Cache14._hotGreen
+        local value73 = Shared.State9
 
         if not value73 then
             value73 = Map["Boat Castle"].Summoner.Circle:GetChildren()
         end
 
-        t78.value73 = value73
+        Shared.State9 = value73
 
-        for i = 1, #t78.value73 do
-            local v1087 = t78.value73[i]
+        for i = 1, #Shared.State9 do
+            local val145 = Shared.State9[i]
 
-            if not v1087:IsA("BasePart") then
+            if not val145:IsA("BasePart") then
                 continue
             end
 
-            local BrickColorName = v1087.BrickColor.Name
-            local v1089 = t78.value100[BrickColorName]
+            local BrickColorName = val145.BrickColor.Name
+            local val146 = Shared.Cache14[BrickColorName]
 
-            if not v1083[v1089] then
+            if not result41[val146] then
                 return false
             end
 
-            if _hotGreen ~= v1087.Part.BrickColor then
-                if LocalPlayer:DistanceFromCharacter(v1087.Position) <= 3 then
-                    local CFrame2 = v1087.CFrame
+            if _hotGreen ~= val145.Part.BrickColor then
+                if LocalPlayer:DistanceFromCharacter(val145.Position) <= 3 then
+                    local CFrame2 = val145.CFrame
 
-                    MoveCharacter(CFrame2 + t78.value28)
-                    t78.value59:InvokeServer({
-						StorageName = v1089,
+                    MoveCharacter(CFrame2 + Shared.OffsetUp5)
+                    Shared.FruitCustomizerRF:InvokeServer({
+						StorageName = val146,
 						Type = "AuraSkin",
 						Context = "Equip"
 					})
                 else
-                    MoveCharacter(v1087.CFrame)
+                    MoveCharacter(val145.CFrame)
                 end
 
                 return 1
@@ -5542,49 +5533,49 @@ function t7.StartFunctions(p254)
         end
 
         return 2
-    end
-    local function v413()
-        if v404(t78.value71) then
+    end]]
+    local function helper34()
+        if helper26(Shared.State7) then
             return true
         end
 
         for _, child in ipairs(Map.TikiOutpost:FindFirstChild("EagleBossArena", true):GetChildren()) do
-            if child.Name == "Tree" and v404(child) then
-                t78.value71 = child
+            if child.Name == "Tree" and helper26(child) then
+                Shared.State7 = child
 
                 return true
             end
         end
     end
-    local function v414(p270)
-        local value78 = t78.value78
+    local function helper35(arg190)
+        local value78 = Shared.State14
 
         if value78 then
-            value78 = t78.value78:IsDescendantOf(p270) and t78.value78.Enabled
+            value78 = Shared.State14:IsDescendantOf(arg190) and Shared.State14.Enabled
         end
 
         if value78 then
-            return t78.value78.Parent
+            return Shared.State14.Parent
         end
 
-        local GetChildren = p270.GetChildren
+        local GetChildren = arg190.GetChildren
 
-        for _, v in ipairs(GetChildren(p270)) do
+        for _, v in ipairs(GetChildren(arg190)) do
             local Specs = v:FindFirstChild("Specs", true)
 
             if Specs and Specs.Enabled then
-                t78.value78 = Specs
+                Shared.State14 = Specs
 
                 return Specs.Parent
             end
         end
     end
-    local function v415()
+    local function helper36()
         local SpawnedDragonEggs = Map.PrehistoricIsland:FindFirstChild("SpawnedDragonEggs", true)
-        local v1100 = SpawnedDragonEggs and SpawnedDragonEggs:FindFirstChild("DragonEgg")
+        local dragonEgg = SpawnedDragonEggs and SpawnedDragonEggs:FindFirstChild("DragonEgg")
 
-        if v1100 then
-            local ProximityPrompt = v1100:FindFirstChild("ProximityPrompt", true)
+        if dragonEgg then
+            local ProximityPrompt = dragonEgg:FindFirstChild("ProximityPrompt", true)
 
             if ProximityPrompt and ProximityPrompt.Enabled then
                 if LocalPlayer:DistanceFromCharacter(ProximityPrompt.Parent.Position) < 3 then
@@ -5597,8 +5588,8 @@ function t7.StartFunctions(p254)
             end
         end
     end
-    local function v416()
-        if t78.value14["Dinosaur Bones"] >= 99 then
+    local function helper37()
+        if Shared.Count["Dinosaur Bones"] >= 99 then
             return
         end
 
@@ -5607,7 +5598,7 @@ function t7.StartFunctions(p254)
 
         if DinoBone and LocalPlayer:DistanceFromCharacter(DinoBone.Position) <= 1500 then
             if LocalPlayer:DistanceFromCharacter(DinoBone.Position) <= 3 then
-                MoveCharacter(DinoBone.CFrame + t78.value28)
+                MoveCharacter(DinoBone.CFrame + Shared.OffsetUp5)
             else
                 MoveCharacter(DinoBone.CFrame)
             end
@@ -5615,27 +5606,27 @@ function t7.StartFunctions(p254)
             return true
         end
     end
-    local function v417()
-        local v1104 = t78.value18("Lava Golem")
+    local function helper38()
+        local result42 = Shared.EnemySpawned("Lava Golem")
 
-        if v1104 and v1104.PrimaryPart then
-            return true, t78.value24(v1104, true)
+        if result42 and result42.PrimaryPart then
+            return true, Shared.Attack(result42, true)
         end
     end
-    local function v418()
+    local function helper39()
         if Fragments.Value >= 1000 then
-            t78.value12("BlackbeardReward", "Microchip", "2")
+            Shared.FireRemote("BlackbeardReward", "Microchip", "2")
 
             local timestamp = tick()
 
             while true do
-                local v1106 = not VerifyTool("Microchip")
+                local flag9 = not VerifyTool("Microchip")
 
-                if v1106 then
-                    v1106 = tick() - timestamp <= 5
+                if flag9 then
+                    flag9 = tick() - timestamp <= 5
                 end
 
-                if not v1106 then
+                if not flag9 then
                     break
                 end
 
@@ -5643,152 +5634,152 @@ function t7.StartFunctions(p254)
             end
         end
     end
-    local function v419()
+    local function helper40()
         return fireclickdetector(Map.CircleIsland.RaidSummon.Button.Main.ClickDetector)
     end
-    local function v420()
+    local function helper41()
         return fireclickdetector(Map.Waterfall.SealedKatana.Hitbox.ClickDetector)
     end
-    local function v421(p271, p272, p273)
-        if p272:GetAttribute("IsMinigameActive") then
-            if tick() - t78.value83 >= 5 then
-                t78.value83 = tick()
-                u55:RemoveVolcanoLava()
+    local function helper42(arg191, arg278, arg320)
+        if arg278:GetAttribute("IsMinigameActive") then
+            if tick() - Shared.Counter2 >= 5 then
+                Shared.Counter2 = tick()
+                Module:RemoveVolcanoLava()
             end
 
-            if v417() then
+            if helper38() then
                 return true
             end
 
-            local v1110 = v414(p273)
+            local result43 = helper35(arg320)
 
-            if v1110 then
-                if LocalPlayer:DistanceFromCharacter(v1110.Position) < 5 then
-                    t78.value11(t78.value5:GetRandomWeapon(), true)
-                    u55.UseSkills(v1110, v46.SeaSkills)
+            if result43 then
+                if LocalPlayer:DistanceFromCharacter(result43.Position) < 5 then
+                    Shared.EquipTool(Shared.SeaManager:GetRandomWeapon(), true)
+                    Module.UseSkills(result43, settings.SeaSkills)
                 else
-                    MoveCharacter(v1110.CFrame, false, false, true)
+                    MoveCharacter(result43.CFrame, false, false, true)
                 end
 
                 return true
             end
 
-            if v1110 then
-                return true, MoveCharacter(v1110.CFrame, false, false, true)
+            if result43 then
+                return true, MoveCharacter(result43.CFrame, false, false, true)
             end
         elseif LocalPlayer:GetAttribute("PrehistoricIslandParticipant") then
-            local v1111 = p271 or not v46.IgnoreEggs and v415()
+            local val147 = arg191 or not settings.IgnoreEggs and helper36()
 
-            if not v1111 then
-                v1111 = p271 or not v46.IgnoreBones and v416()
+            if not val147 then
+                val147 = arg191 or not settings.IgnoreBones and helper37()
             end
 
-            if v1111 then
+            if val147 then
                 return true
             end
         end
     end
-    local function v422(p274, p275)
-        if p275 then
-            local ProximityPrompt = p274:FindFirstChild("ProximityPrompt", true)
+    local function helper43(arg192, arg279)
+        if arg279 then
+            local ProximityPrompt = arg192:FindFirstChild("ProximityPrompt", true)
 
-            if LocalPlayer:DistanceFromCharacter(p275.Position) <= 5 and ProximityPrompt then
+            if LocalPlayer:DistanceFromCharacter(arg279.Position) <= 5 and ProximityPrompt then
                 fireproximityprompt(ProximityPrompt)
 
                 return
             end
 
-            MoveCharacter(p275.CFrame)
+            MoveCharacter(arg279.CFrame)
         end
     end
-    local function v423(p276)
-        if p276 then
-            for _, child in ipairs(p276:GetChildren()) do
-                local v1118 = v422
-                local v1119 = child:IsA("Model")
+    local function helper44(arg193)
+        if arg193 then
+            for _, child in ipairs(arg193:GetChildren()) do
+                local val148 = helper43
+                local isAResult3 = child:IsA("Model")
 
-                if v1119 then
-                    v1119 = child.PrimaryPart or child:FindFirstChildOfClass("MeshPart")
+                if isAResult3 then
+                    isAResult3 = child.PrimaryPart or child:FindFirstChildOfClass("MeshPart")
                 end
 
-                if v1118(child, v1119) then
+                if val148(child, isAResult3) then
                     return "Collecting Fire Flower"
                 end
             end
         end
 
-        local v1120 = t78.value18(t78.value86)
+        local result44 = Shared.EnemySpawned(Shared.Cache)
 
-        if v1120 and v1120.PrimaryPart then
-            t78.value24(v1120, true)
+        if result44 and result44.PrimaryPart then
+            Shared.Attack(result44, true)
         else
-            t78.value6:TweenToCFrameQueue(t78.value96["Forest Pirate"])
+            Shared.TweenManager:TweenToCFrameQueue(Shared.Cache10["Forest Pirate"])
         end
 
         return true
     end
-    local function v424(p277, _)
-        local v1123 = not (p277 < 350) and "Yama" or "Tushita"
+    local function helper45(arg194, _)
+        local flag10 = not (arg194 < 350) and "Yama" or "Tushita"
 
-        if VerifyTool(v1123) then
-            t78.value11(v1123)
-            t78.value3.ToolDebounce()
+        if VerifyTool(flag10) then
+            Shared.EquipTool(flag10)
+            Shared.FarmManager.ToolDebounce()
 
-            local v1124 = v48.PirateRaid and t78.value1.PirateRaid()
+            local val149 = enabledOptions.PirateRaid and Shared.OptionIndex.PirateRaid()
 
-            if not v1124 then
-                v1124 = v48.Fruits and t78.value1.Fruits()
+            if not val149 then
+                val149 = enabledOptions.Fruits and Shared.OptionIndex.Fruits()
 
-                if not v1124 then
-                    v1124 = v48.EliteHunter and t78.value1.EliteHunter() or t78.value1.Bones()
+                if not val149 then
+                    val149 = enabledOptions.EliteHunter and Shared.OptionIndex.EliteHunter() or Shared.OptionIndex.Bones()
                 end
             end
 
-            return v1124
+            return val149
         end
 
-        t78.value12("LoadItem", v1123)
+        Shared.FireRemote("LoadItem", flag10)
 
-        return "Getting 350 in: " .. v1123
+        return "Getting 350 in: " .. flag10
     end
-    local function v425(p279)
-        local v1126 = t78.value12("CDKQuest", "OpenDoor")
-        local v1127 = v1126 == "opened"
+    local function helper46(arg195)
+        local result45 = Shared.FireRemote("CDKQuest", "OpenDoor")
+        local val150 = result45 == "opened"
 
-        if not v1127 then
-            v1127 = v1126 == "can" and t78.value12("CDKQuest", "OpenDoor", true)
+        if not val150 then
+            val150 = result45 == "can" and Shared.FireRemote("CDKQuest", "OpenDoor", true)
         end
 
-        if v1127 then
-            local FindFirstChild = p279.FindFirstChild
+        if val150 then
+            local FindFirstChild = arg195.FindFirstChild
 
-            t78.value80 = true
+            Shared.State16 = true
 
-            if FindFirstChild(p279, "Breakable") then
-                p279.Breakable:Destroy()
+            if FindFirstChild(arg195, "Breakable") then
+                arg195.Breakable:Destroy()
             end
         end
     end
-    local function v426()
-        local value81 = t78.value81
+    local function helper47()
+        local value81 = Shared.State17
 
         if value81 then
-            value81 = t78.value81:IsDescendantOf(Map)
+            value81 = Shared.State17:IsDescendantOf(Map)
         end
 
         if value81 then
-            return t78.value81.Transparency ~= 1
+            return Shared.State17.Transparency ~= 1
         end
 
         for _, child in ipairs(Map.MysticIsland:GetChildren()) do
             if child:IsA("MeshPart") and child.MeshId == "rbxassetid://10153114969" then
-                t78.value81 = child
+                Shared.State17 = child
 
                 return child.Transparency ~= 1
             end
         end
     end
-    local function v427()
+    local function helper48()
         if HighestPoint and HighestPoint:IsDescendantOf(Map) then
             return HighestPoint
         end
@@ -5798,15 +5789,15 @@ function t7.StartFunctions(p254)
         return HighestPoint
     end
 
-    v375("Tushita", function()
-        if t78.value13.Tushita then
-            if t78.value17("rip_indra True Form") then
-                local v1068 = t78.value18("rip_indra True Form")
+    NewOptionQueue("Tushita", function()
+        if Shared.Unlocked.Tushita then
+            if Shared.IsSpawned("rip_indra True Form") then
+                local result46 = Shared.EnemySpawned("rip_indra True Form")
 
-                if v1068 and v1068.PrimaryPart then
-                    t78.value24(v1068)
+                if result46 and result46.PrimaryPart then
+                    Shared.Attack(result46)
                 else
-                    MoveCharacter(t78.value34)
+                    MoveCharacter(Shared.Position4)
                 end
 
                 return true
@@ -5815,13 +5806,13 @@ function t7.StartFunctions(p254)
             return nil
         end
 
-        local Progress = u55:GetProgress("Tushita", "TushitaProgress")
+        local Progress = Module:GetProgress("Tushita", "TushitaProgress")
 
-        t78.value68 = t78.value68 or Progress.OpenedDoor
+        Shared.State4 = Shared.State4 or Progress.OpenedDoor
 
-        if t78.value68 then
-            if t78.value17("Longma") then
-                return v407(u55.Bosses.Longma, "Longma")
+        if Shared.State4 then
+            if Shared.IsSpawned("Longma") then
+                return TryBossQuest(Module.Bosses.Longma, "Longma")
             end
 
             return nil
@@ -5829,17 +5820,17 @@ function t7.StartFunctions(p254)
 
         if VerifyTool("Holy Torch") then
             for i = 1, #Progress.Torches do
-                local v1071 = i
+                local val151 = i
 
-                if not Progress.Torches[v1071] then
-                    t78.value12("TushitaProgress", "Torch", v1071)
+                if not Progress.Torches[val151] then
+                    Shared.FireRemote("TushitaProgress", "Torch", val151)
                 end
             end
 
             return true
         end
 
-        if t78.value17("rip_indra True Form") then
+        if Shared.IsSpawned("rip_indra True Form") then
             local new = CFrame.new
 
             MoveCharacter(new(5713, 38, 255))
@@ -5847,128 +5838,128 @@ function t7.StartFunctions(p254)
             return true
         end
 
-        return not v48.EliteHunter and t78.value1.EliteHunter()
-    end, t78.value9 == 3)
-    v375("Darkbeard", function()
-        if t78.value17("Darkbeard") then
-            local v1132 = t78.value18("Darkbeard")
+        return not enabledOptions.EliteHunter and Shared.OptionIndex.EliteHunter()
+    end, Shared.Sea == 3)
+    NewOptionQueue("Darkbeard", function()
+        if Shared.IsSpawned("Darkbeard") then
+            local result47 = Shared.EnemySpawned("Darkbeard")
 
-            if v1132 and v1132.PrimaryPart then
-                t78.value24(v1132)
+            if result47 and result47.PrimaryPart then
+                Shared.Attack(result47)
             else
-                MoveCharacter(t78.value40)
+                MoveCharacter(Shared.Position10)
             end
 
             return true
         end
 
         if VerifyTool("Fist of Darkness") then
-            t78.value11("Fist of Darkness")
+            Shared.EquipTool("Fist of Darkness")
 
-            local value40 = t78.value40
+            local value40 = Shared.Position10
 
             MoveCharacter(value40)
 
             return true
         end
-    end, t78.value9 == 2)
-    v375("CursedCaptain", function()
-        if t78.value17("Cursed Captain") then
-            local v1134 = t78.value18("Cursed Captain")
+    end, Shared.Sea == 2)
+    NewOptionQueue("CursedCaptain", function()
+        if Shared.IsSpawned("Cursed Captain") then
+            local result48 = Shared.EnemySpawned("Cursed Captain")
 
-            if v1134 and v1134.PrimaryPart then
-                t78.value24(v1134)
+            if result48 and result48.PrimaryPart then
+                Shared.Attack(result48)
             else
-                MoveCharacter(t78.value41)
+                MoveCharacter(Shared.Position11)
             end
 
             return true
         end
-    end, t78.value9 == 2)
-    v375("Factory", function()
-        local v1135 = Enemies:FindFirstChild("Core") or ReplicatedStorage:FindFirstChild("Core")
+    end, Shared.Sea == 2)
+    NewOptionQueue("Factory", function()
+        local core = Enemies:FindFirstChild("Core") or ReplicatedStorage:FindFirstChild("Core")
 
-        if v1135 and (t78.value10(v1135) and v1135.PrimaryPart) then
-            return "Defeating Factory", t78.value3.GotoTargetCFrame(v1135.PrimaryPart.CFrame)
+        if core and (Shared.IsAlive(core) and core.PrimaryPart) then
+            return "Defeating Factory", Shared.FarmManager.GotoTargetCFrame(core.PrimaryPart.CFrame)
         end
-    end, t78.value9 == 2)
-    v375("CursedDualKatana", function()
-        if t78.value13["Cursed Dual Katana"] then
+    end, Shared.Sea == 2)
+    NewOptionQueue("CursedDualKatana", function()
+        if Shared.Unlocked["Cursed Dual Katana"] then
             return
         end
 
-        if not t78.value13.Tushita then
-            return t78.value1.Tushita()
+        if not Shared.Unlocked.Tushita then
+            return Shared.OptionIndex.Tushita()
         end
 
-        if not t78.value13.Yama then
-            return t78.value1.Yama() or t78.value1.EliteHunter()
+        if not Shared.Unlocked.Yama then
+            return Shared.OptionIndex.Yama() or Shared.OptionIndex.EliteHunter()
         end
 
-        local Tushita = t78.value15.Tushita
-        local Yama = t78.value15.Yama
+        local Tushita = Shared.Mastery.Tushita
+        local Yama = Shared.Mastery.Yama
 
         if Tushita >= 350 and Yama >= 350 then
-            if not t78.value80 then
-                return v425(Map.Turtle.Cursed)
+            if not Shared.State16 then
+                return helper46(Map.Turtle.Cursed)
             end
 
-            local v1138, v1139 = v410()
+            local val152, val153 = helper31()
 
-            if v1138 then
-                if v1139 then
-                    if t78.value25[v1138][v1139](t78.value97, t78.value1) then
-                        return v1138 .. v1139
+            if val152 then
+                if val153 then
+                    if Shared.CursedDualKatana[val152][val153](Shared.Cache11, Shared.OptionIndex) then
+                        return val152 .. val153
                     end
-                elseif t78.value25[v1138](t78.value97, t78.value1) then
-                    return v1138
+                elseif Shared.CursedDualKatana[val152](Shared.Cache11, Shared.OptionIndex) then
+                    return val152
                 end
             end
 
             return
         end
 
-        return v424(Tushita, Yama)
-    end, t78.value9 == 3)
+        return helper45(Tushita, Yama)
+    end, Shared.Sea == 3)
 
-    local v428 = t78.value9 == 2
+    local val154 = Shared.Sea == 2
 
-    if not v428 then
-        v428 = t78.value9 == 3
+    if not val154 then
+        val154 = Shared.Sea == 3
     end
 
-    v375("Raid", function()
-        local v1140 = Locations:FindFirstChild("l'Ã‰glise de ProphÃ©tie")
+    NewOptionQueue("Raid", function()
+        local lGliseDeProphTie = Locations:FindFirstChild("l'Église de Prophétie")
 
-        if v1140 and LocalPlayer:DistanceFromCharacter(v1140.Position) <= 150 then
-            local v1141 = t78.value12("Awakener", "Check")
+        if lGliseDeProphTie and LocalPlayer:DistanceFromCharacter(lGliseDeProphTie.Position) <= 150 then
+            local result49 = Shared.FireRemote("Awakener", "Check")
 
-            if type(v1141) == "table" then
-                if Fragments.Value < (v1141.Cost or 0) then
-                    return true, t78.value12("Awakener", "Teleport")
+            if type(result49) == "table" then
+                if Fragments.Value < (result49.Cost or 0) then
+                    return true, Shared.FireRemote("Awakener", "Teleport")
                 end
 
-                t78.value12("Awakener", "Awaken")
-                t78.value12("Awakener", "Teleport")
-            elseif v1141 ~= 0 then
-                return true, t78.value12("Awakener", "Teleport")
+                Shared.FireRemote("Awakener", "Awaken")
+                Shared.FireRemote("Awakener", "Teleport")
+            elseif result49 ~= 0 then
+                return true, Shared.FireRemote("Awakener", "Teleport")
             end
         end
 
-        if t78.value4:IsRaiding() then
-            local RaidIsland = u55:GetRaidIsland()
+        if Shared.RaidManager:IsRaiding() then
+            local RaidIsland = Module:GetRaidIsland()
 
             if RaidIsland then
                 for _, child in ipairs(Enemies:GetChildren()) do
                     local PrimaryPart = child.PrimaryPart
 
-                    if t78.value10(child) and PrimaryPart and ((RaidIsland.Position - PrimaryPart.Position).Magnitude <= 1000 and PrimaryPart.Position.Y > 0) then
-                        return true, t78.value24(child, true, true, v46.FarmMode ~= "Up" and v46.FarmMode or "Star")
+                    if Shared.IsAlive(child) and PrimaryPart and ((RaidIsland.Position - PrimaryPart.Position).Magnitude <= 1000 and PrimaryPart.Position.Y > 0) then
+                        return true, Shared.Attack(child, true, true, settings.FarmMode ~= "Up" and settings.FarmMode or "Star")
                     end
                 end
 
                 if LocalPlayer:DistanceFromCharacter(RaidIsland.Position) <= 3000 then
-                    MoveCharacter(RaidIsland.CFrame + t78.value29)
+                    MoveCharacter(RaidIsland.CFrame + Shared.OffsetUp50)
                 end
 
                 return true
@@ -5978,36 +5969,36 @@ function t7.StartFunctions(p254)
         end
 
         if VerifyTool("Special Microchip") then
-            return true, t78.value4:start()
+            return true, Shared.RaidManager:start()
         end
-    end, v428)
-    v375("Leviathan", function()
+    end, val154)
+    NewOptionQueue("Leviathan", function()
         if not Map:FindFirstChild("FrozenHeart") then
-            local Segment = t78.value95.Segment
-            local v1147 = Segment
+            local Segment = Shared.Cache9.Segment
+            local val155 = Segment
 
             if Segment then
-                v1147 = t78.value10(Segment) and Segment:GetAttribute("HealthEnabled")
+                val155 = Shared.IsAlive(Segment) and Segment:GetAttribute("HealthEnabled")
             end
 
-            if v1147 then
-                return v409(Segment)
+            if val155 then
+                return helper30(Segment)
             end
 
             local children = SeaBeasts:GetChildren()
 
             for i = 1, #children do
-                local v1150 = children[i]
+                local val156 = children[i]
 
-                if v1150.name:find("Leviathan") and (t78.value10(v1150) and v1150:GetAttribute("HealthEnabled")) then
-                    t78.value95.Segment = v1150
+                if val156.name:find("Leviathan") and (Shared.IsAlive(val156) and val156:GetAttribute("HealthEnabled")) then
+                    Shared.Cache9.Segment = val156
 
-                    return v409(v1150)
+                    return helper30(val156)
                 end
             end
         end
-    end, t78.value9 == 3)
-    v375("KitsuneIsland", function()
+    end, Shared.Sea == 3)
+    NewOptionQueue("KitsuneIsland", function()
         if Lighting:GetAttribute("BlueMoonEnded") then
             return
         end
@@ -6015,8 +6006,8 @@ function t7.StartFunctions(p254)
         local KitsuneIsland = Map:FindFirstChild("KitsuneIsland")
 
         if KitsuneIsland and Lighting:GetAttribute("MoonPhase") == 5 then
-            if v408() then
-                return t78.value102()
+            if helper29() then
+                return Shared.Value102()
             end
 
             local ShrineDialogPart = KitsuneIsland:FindFirstChild("ShrineDialogPart")
@@ -6024,7 +6015,7 @@ function t7.StartFunctions(p254)
             if ShrineDialogPart then
                 if LocalPlayer:DistanceFromCharacter(ShrineDialogPart.Position) <= 3 then
                     if Lighting:GetAttribute("MoonPhase") == 5 and not Lighting:GetAttribute("IsBlueMoon") then
-                        t78.value62:FireServer()
+                        Shared.TouchKitsuneStatue:FireServer()
                     end
                 else
                     MoveCharacter(ShrineDialogPart.CFrame)
@@ -6035,85 +6026,85 @@ function t7.StartFunctions(p254)
 
             return true
         end
-    end, t78.value9 == 3)
-    v375("CraftVolcanicMagnet", function()
+    end, Shared.Sea == 3)
+    NewOptionQueue("CraftVolcanicMagnet", function()
         if Map:FindFirstChild("PrehistoricIsland") then
-            if v48.FullyVolcano or v48.GotoVolcano then
+            if enabledOptions.FullyVolcano or enabledOptions.GotoVolcano then
                 return false
             end
 
             if LocalPlayer:GetAttribute("CurrentLocation") == "Prehistoric Island" then
                 return false
             end
-        elseif tick() - t78.value85 <= 30 then
+        elseif tick() - Shared.Counter4 <= 30 then
             return false
         end
 
-        if t78.value13["Volcanic Magnet"] then
-            t78.value85 = tick()
+        if Shared.Unlocked["Volcanic Magnet"] then
+            Shared.Counter4 = tick()
 
             return
         end
 
-        if t78.value14["Scrap Metal"] < 10 then
-            return t78.value3:Material("Leather + Scrap Metal")
+        if Shared.Count["Scrap Metal"] < 10 then
+            return Shared.FarmManager:Material("Leather + Scrap Metal")
         end
 
-        if t78.value14["Blaze Ember"] < 15 then
-            return t78.value1.DragonHunter()
+        if Shared.Count["Blaze Ember"] < 15 then
+            return Shared.OptionIndex.DragonHunter()
         end
 
-        if LocalPlayer:DistanceFromCharacter(t78.value44.Position) < 3 then
-            t78.value12("CraftItem", "Craft", "Volcanic Magnet")
+        if LocalPlayer:DistanceFromCharacter(Shared.Position14.Position) < 3 then
+            Shared.FireRemote("CraftItem", "Craft", "Volcanic Magnet")
         else
-            MoveCharacter(t78.value44)
+            MoveCharacter(Shared.Position14)
         end
 
         return true
-    end, t78.value9 == 3)
-    v375("FullyVolcano", function(p280, p281)
+    end, Shared.Sea == 3)
+    NewOptionQueue("FullyVolcano", function(arg196, arg280)
         local PrehistoricIsland = Map:FindFirstChild("PrehistoricIsland")
 
         if PrehistoricIsland then
             local Core = PrehistoricIsland:FindFirstChild("Core")
-            local v1157 = Core and Core:FindFirstChild("ActivationPrompt")
-            local v1158 = Core and Core:FindFirstChild("VolcanoRocks")
+            local activationPrompt = Core and Core:FindFirstChild("ActivationPrompt")
+            local volcanoRocks = Core and Core:FindFirstChild("VolcanoRocks")
 
-            if v421(p280, PrehistoricIsland, v1158) then
-                t78.value84 = tick()
+            if helper42(arg196, PrehistoricIsland, volcanoRocks) then
+                Shared.Counter3 = tick()
 
                 return true
             end
 
-            if v1157 or PrehistoricIsland:GetAttribute("IsMinigameActive") then
-                t78.value84 = tick()
+            if activationPrompt or PrehistoricIsland:GetAttribute("IsMinigameActive") then
+                Shared.Counter3 = tick()
             end
 
-            if v1157 then
-                if not PrehistoricIsland:GetAttribute("IsMinigameActive") and LocalPlayer:DistanceFromCharacter(v1157.Position) <= 3 then
-                    local WaitForChild = v1157.WaitForChild
+            if activationPrompt then
+                if not PrehistoricIsland:GetAttribute("IsMinigameActive") and LocalPlayer:DistanceFromCharacter(activationPrompt.Position) <= 3 then
+                    local WaitForChild = activationPrompt.WaitForChild
 
-                    fireproximityprompt(WaitForChild(v1157, "ProximityPrompt", 9000000000))
+                    fireproximityprompt(WaitForChild(activationPrompt, "ProximityPrompt", 9000000000))
                 else
-                    MoveCharacter(v1157.CFrame)
+                    MoveCharacter(activationPrompt.CFrame)
                 end
             else
-                local v1160 = Core
+                local val157 = Core
 
                 if Core then
-                    v1160 = Core:FindFirstChild("PrehistoricRelic") and Core.PrehistoricRelic:FindFirstChild("Skull")
+                    val157 = Core:FindFirstChild("PrehistoricRelic") and Core.PrehistoricRelic:FindFirstChild("Skull")
                 end
 
-                if v1160 then
-                    local v1161 = Core.PrehistoricRelic.Skull.CFrame + Vector3.yAxis * 25
+                if val157 then
+                    local val158 = Core.PrehistoricRelic.Skull.CFrame + Vector3.yAxis * 25
 
-                    MoveCharacter(v1161)
+                    MoveCharacter(val158)
 
-                    if not p281 then
-                        p281 = v46.VolcanoReset
+                    if not arg280 then
+                        arg280 = settings.VolcanoReset
                     end
 
-                    if p281 and LocalPlayer:GetAttribute("PrehistoricIslandParticipant") and (tick() - t78.value84 >= 15 and t78.value10(LocalPlayer.Character)) and LocalPlayer:DistanceFromCharacter(v1161.Position) <= 10 then
+                    if arg280 and LocalPlayer:GetAttribute("PrehistoricIslandParticipant") and (tick() - Shared.Counter3 >= 15 and Shared.IsAlive(LocalPlayer.Character)) and LocalPlayer:DistanceFromCharacter(val158.Position) <= 10 then
                         LocalPlayer.Character.Humanoid.Health = 0
                     end
                 end
@@ -6122,292 +6113,292 @@ function t7.StartFunctions(p254)
             return true
         end
 
-        if not v48.Sea then
-            return t78.value5:DriveBoat("inf")
+        if not enabledOptions.Sea then
+            return Shared.SeaManager:DriveBoat("inf")
         end
-    end, t78.value9 == 3)
-    v375("PirateRaid", function()
-        local PirateRaid = u55.Enemies:GetTagged("PirateRaid")
+    end, Shared.Sea == 3)
+    NewOptionQueue("PirateRaid", function()
+        local PirateRaid = Module.Enemies:GetTagged("PirateRaid")
 
-        if #PirateRaid > 0 or tick() - u55.PirateRaid <= 10 then
+        if #PirateRaid > 0 or tick() - Module.PirateRaid <= 10 then
             for i = 1, #PirateRaid do
-                local v1164 = i
+                local val159 = i
 
-                if PirateRaid[v1164].PrimaryPart then
-                    return true, t78.value24(PirateRaid[v1164], true, true)
+                if PirateRaid[val159].PrimaryPart then
+                    return true, Shared.Attack(PirateRaid[val159], true, true)
                 end
             end
 
-            return true, MoveCharacter(t78.value32)
+            return true, MoveCharacter(Shared.Position2)
         end
-    end, t78.value9 == 3)
-    v375("Fruits", function(p282)
-        if not p282 then
-            p282 = workspace:FindFirstChild("Fruit ") or workspace:FindFirstChildOfClass("Tool")
-        end
-
-        local v1166 = p282
-
-        if p282 then
-            v1166 = p282:IsA("Model") or p282:IsA("Tool")
+    end, Shared.Sea == 3)
+    NewOptionQueue("Fruits", function(arg197)
+        if not arg197 then
+            arg197 = workspace:FindFirstChild("Fruit ") or workspace:FindFirstChildOfClass("Tool")
         end
 
-        if v1166 then
-            local v1167 = p282:FindFirstChild("Handle") and p282.Handle.CFrame
+        local val160 = arg197
 
-            if not v1167 and p282:IsA("Model") then
-                local Pivot = p282:GetPivot()
+        if arg197 then
+            val160 = arg197:IsA("Model") or arg197:IsA("Tool")
+        end
+
+        if val160 then
+            local handle = arg197:FindFirstChild("Handle") and arg197.Handle.CFrame
+
+            if not handle and arg197:IsA("Model") then
+                local Pivot = arg197:GetPivot()
 
                 if Pivot.Position ~= Vector3.zero then
-                    v1167 = Pivot
+                    handle = Pivot
                 end
             end
 
-            if v1167 then
-                if LocalPlayer:DistanceFromCharacter(v1167.Position) <= 2 then
-                    MoveCharacter(v1167 + t78.value27)
+            if handle then
+                if LocalPlayer:DistanceFromCharacter(handle.Position) <= 2 then
+                    MoveCharacter(handle + Shared.OffsetUp3)
                 else
-                    MoveCharacter(v1167)
+                    MoveCharacter(handle)
                 end
 
                 return true
             end
         end
     end)
-    v375("DracoV2V3", function()
-        local v1169 = t78.value26:EvoDracoRace(t78.value1)
+    NewOptionQueue("DracoV2V3", function()
+        local evoDracoRaceResult = Shared.DojoTrainer:EvoDracoRace(Shared.OptionIndex)
 
-        if v1169 == "FireFlowers" then
-            return v423(workspace:FindFirstChild("FireFlowers"))
+        if evoDracoRaceResult == "FireFlowers" then
+            return helper44(workspace:FindFirstChild("FireFlowers"))
         end
 
-        return v1169
-    end, t78.value9 == 3)
-    v375("DojoTrainer", function()
-        local v1170 = t78.value92["Dragon Talon"]
+        return evoDracoRaceResult
+    end, Shared.Sea == 3)
+    NewOptionQueue("DojoTrainer", function()
+        local val161 = Shared.Cache6["Dragon Talon"]
 
-        if not v1170 or v1170 < 500 then
+        if not val161 or val161 < 500 then
             if not VerifyTool("Dragon Talon") then
-                t78.value12("BuyDragonTalon")
+                Shared.FireRemote("BuyDragonTalon")
             else
-                if v1170 then
-                    t78.value92["Dragon Talon"] = GetToolMastery("Dragon Talon")
-                    t78.value11("Dragon Talon")
-                    t78.value3.ToolDebounce()
+                if val161 then
+                    Shared.Cache6["Dragon Talon"] = GetToolMastery("Dragon Talon")
+                    Shared.EquipTool("Dragon Talon")
+                    Shared.FarmManager.ToolDebounce()
 
-                    return t78.value1.Bones()
+                    return Shared.OptionIndex.Bones()
                 end
 
-                t78.value92["Dragon Talon"] = GetToolMastery("Dragon Talon")
+                Shared.Cache6["Dragon Talon"] = GetToolMastery("Dragon Talon")
             end
 
             return true
         end
 
-        return t78.value26:Train(t78.value1)
-    end, t78.value9 == 3)
-    v375("DragonHunter", function()
-        if t78.value77 == "Locked" then
+        return Shared.DojoTrainer:Train(Shared.OptionIndex)
+    end, Shared.Sea == 3)
+    NewOptionQueue("DragonHunter", function()
+        if Shared.State13 == "Locked" then
             return
         end
 
-        if v408() then
-            return t78.value102()
+        if helper29() then
+            return Shared.Value102()
         end
 
-        if not t78.value77 or not t78.value77.Text then
-            if LocalPlayer:DistanceFromCharacter(t78.value44.Position) < 5 then
-                t78.value77 = t78.value60:InvokeServer(t78.value98.Check)
+        if not Shared.State13 or not Shared.State13.Text then
+            if LocalPlayer:DistanceFromCharacter(Shared.Position14.Position) < 5 then
+                Shared.State13 = Shared.DragonHunter:InvokeServer(Shared.Cache12.Check)
 
-                if t78.value77 and not t78.value77.Text then
-                    pcall(t78.value60.InvokeServer, t78.value60, t78.value98.RequestQuest)
+                if Shared.State13 and not Shared.State13.Text then
+                    pcall(Shared.DragonHunter.InvokeServer, Shared.DragonHunter, Shared.Cache12.RequestQuest)
                 end
             else
-                MoveCharacter(t78.value44)
+                MoveCharacter(Shared.Position14)
             end
 
             return "Getting Dragon Hunter Quest"
         end
 
-        local value77Text = t78.value77.Text
+        local value77Text = Shared.State13.Text
 
         if value77Text:find("Defeat") then
-            local v1172 = not value77Text:find("Venomous") and "Hydra Enforcer" or "Venomous Assailant"
-            local v1173 = t78.value18(v1172)
-            local v1174 = t78.value19[v1172]
+            local flag11 = not value77Text:find("Venomous") and "Hydra Enforcer" or "Venomous Assailant"
+            local result50 = Shared.EnemySpawned(flag11)
+            local val162 = Shared.EnemyLocations[flag11]
 
-            if v1173 and v1173.PrimaryPart then
-                t78.value24(v1173, true)
-            elseif v1174 then
-                t78.value6:TweenToCFrameQueue(v1174)
+            if result50 and result50.PrimaryPart then
+                Shared.Attack(result50, true)
+            elseif val162 then
+                Shared.TweenManager:TweenToCFrameQueue(val162)
             end
 
-            return "Killing: " .. v1172
+            return "Killing: " .. flag11
         end
 
         if value77Text:find("Destroy") then
-            t78.value103()
+            Shared.Value103()
 
             return "Breaking Hydra Island Tree's"
         end
-    end, t78.value9 == 3)
-    v375("MirageFruitDealer", function()
+    end, Shared.Sea == 3)
+    NewOptionQueue("MirageFruitDealer", function()
         if Map:FindFirstChild("MysticIsland") then
-            local v1175 = t78.value64["Advanced Fruit Dealer"]
+            local val163 = Shared.Proxy["Advanced Fruit Dealer"]
 
-            if v1175 and v1175.PrimaryPart then
-                return true, MoveCharacter(v1175.PrimaryPart.CFrame)
+            if val163 and val163.PrimaryPart then
+                return true, MoveCharacter(val163.PrimaryPart.CFrame)
             end
         end
-    end, t78.value9 == 3)
-    v375("MirageGear", function()
-        if Map:FindFirstChild("MysticIsland") and v426() then
-            local value81CFrame = t78.value81.CFrame
+    end, Shared.Sea == 3)
+    NewOptionQueue("MirageGear", function()
+        if Map:FindFirstChild("MysticIsland") and helper47() then
+            local value81CFrame = Shared.State17.CFrame
 
             MoveCharacter(value81CFrame)
 
             return true
         end
-    end, t78.value9 == 3)
-    v375("MirageChests", function()
+    end, Shared.Sea == 3)
+    NewOptionQueue("MirageChests", function()
         if Map:FindFirstChild("MysticIsland") then
-            return t78.value1.ChestTween(" from Mirage Island", Map.MysticIsland)
+            return Shared.OptionIndex.ChestTween(" from Mirage Island", Map.MysticIsland)
         end
-    end, t78.value9 == 3)
-    v375("TeleportMirage", function()
-        if Map:FindFirstChild("MysticIsland") and v427() then
-            local v1177 = HighestPoint.CFrame + Vector3.yAxis * 211.8
+    end, Shared.Sea == 3)
+    NewOptionQueue("TeleportMirage", function()
+        if Map:FindFirstChild("MysticIsland") and helper48() then
+            local val164 = HighestPoint.CFrame + Vector3.yAxis * 211.8
 
-            MoveCharacter(v1177)
+            MoveCharacter(val164)
 
             return true
         end
-    end, t78.value9 == 3)
-    v375("GotoVolcano", function()
+    end, Shared.Sea == 3)
+    NewOptionQueue("GotoVolcano", function()
         if Map:FindFirstChild("PrehistoricIsland") then
             local Core = Map.PrehistoricIsland:FindFirstChild("Core")
-            local v1179 = Core and Core:FindFirstChild("ActivationPrompt")
+            local activationPrompt2 = Core and Core:FindFirstChild("ActivationPrompt")
 
-            if v1179 then
-                return true, MoveCharacter(v1179.CFrame)
+            if activationPrompt2 then
+                return true, MoveCharacter(activationPrompt2.CFrame)
             end
 
-            local v1180 = Core
+            local val165 = Core
 
             if Core then
-                v1180 = Core:FindFirstChild("PrehistoricRelic") and Core.PrehistoricRelic:FindFirstChild("Skull")
+                val165 = Core:FindFirstChild("PrehistoricRelic") and Core.PrehistoricRelic:FindFirstChild("Skull")
             end
 
-            if v1180 then
+            if val165 then
                 return true, MoveCharacter(Core.PrehistoricRelic.Skull.CFrame + Vector3.yAxis * 25)
             end
         end
-    end, t78.value9 == 3)
-    v375("Shipwright", function()
+    end, Shared.Sea == 3)
+    NewOptionQueue("Shipwright", function()
         if Subclass.Value == "Shipwright" then
             return nil
         end
 
-        local v1181, v1182 = t78.value57:InvokeServer("Shipwright")
+        local val166, val167 = Shared.InteractSubclassQuest:InvokeServer("Shipwright")
 
-        if v1181 == 1 then
-            t78.value58:InvokeServer("Shipwright")
+        if val166 == 1 then
+            Shared.StartSubclassQuest:InvokeServer("Shipwright")
 
             return
         end
 
-        if v1181 == 3 then
-            if (tonumber(v1182) or 0) < 20 then
-                return t78.value1.Sea(t78.value101.Shipwright)
+        if val166 == 3 then
+            if (tonumber(val167) or 0) < 20 then
+                return Shared.OptionIndex.Sea(Shared.Cache15.Shipwright)
             end
-        elseif v1181 == 4 or v1181 == 2 then
-            if t78.value63.GetPlayerData:InvokeServer().Purchased.Shipwright ~= nil then
-                t78.value63.EquipSubclass:InvokeServer("Shipwright")
+        elseif val166 == 4 or val166 == 2 then
+            if Shared.SubclassNetwork.GetPlayerData:InvokeServer().Purchased.Shipwright ~= nil then
+                Shared.SubclassNetwork.EquipSubclass:InvokeServer("Shipwright")
 
                 return
             end
 
             if Fragments.Value >= 3000 then
-                t78.value63.PurchaseSubclass:InvokeServer("Shipwright")
+                Shared.SubclassNetwork.PurchaseSubclass:InvokeServer("Shipwright")
             end
         end
-    end, t78.value9 == 3)
-    v375("RaceV2", function()
-        local v1183 = Data.Race.Value == "Draco"
+    end, Shared.Sea == 3)
+    NewOptionQueue("RaceV2", function()
+        local val168 = Data.Race.Value == "Draco"
 
-        if not v1183 then
-            v1183 = not t78.value13["Warrior Helmet"] or Data.Race:FindFirstChild("Evolved")
+        if not val168 then
+            val168 = not Shared.Unlocked["Warrior Helmet"] or Data.Race:FindFirstChild("Evolved")
         end
 
-        if v1183 then
+        if val168 then
             return nil
         end
 
-        local Progress = u55:GetProgress("RaceV2", "Alchemist", "1")
+        local Progress = Module:GetProgress("RaceV2", "Alchemist", "1")
 
         if Progress == 0 or Progress == 2 then
             if Progress ~= 2 or Beli.Value >= 500000 then
-                if LocalPlayer:DistanceFromCharacter(t78.value51.Position) < 5 then
-                    t78.value12("Alchemist", Progress ~= 0 and "3" or "2")
+                if LocalPlayer:DistanceFromCharacter(Shared.Position21.Position) < 5 then
+                    Shared.FireRemote("Alchemist", Progress ~= 0 and "3" or "2")
                 else
-                    MoveCharacter(t78.value51)
+                    MoveCharacter(Shared.Position21)
                 end
 
                 return true
             end
         elseif Progress == 1 then
             for i = 1, 2 do
-                local v1186 = i
-                local v1187 = workspace:FindFirstChild("Flower" .. v1186)
-                local v1188 = v1187
+                local val169 = i
+                local flower = workspace:FindFirstChild("Flower" .. val169)
+                local val170 = flower
 
-                if v1187 then
-                    v1188 = v1187.Transparency ~= 1 and not VerifyTool("Flower " .. v1186)
+                if flower then
+                    val170 = flower.Transparency ~= 1 and not VerifyTool("Flower " .. val169)
                 end
 
-                if v1188 then
-                    return "Collecting Flower: " .. v1186, MoveCharacter(v1187.CFrame)
+                if val170 then
+                    return "Collecting Flower: " .. val169, MoveCharacter(flower.CFrame)
                 end
             end
 
             if not VerifyTool("Flower 3") then
-                local v1189 = t78.value18("Swan Pirate")
+                local result51 = Shared.EnemySpawned("Swan Pirate")
 
-                if v1189 and v1189.PrimaryPart then
-                    t78.value24(v1189)
+                if result51 and result51.PrimaryPart then
+                    Shared.Attack(result51)
                 else
-                    t78.value6:TweenToCFrameQueue(t78.value96["Swan Pirate"])
+                    Shared.TweenManager:TweenToCFrameQueue(Shared.Cache10["Swan Pirate"])
                 end
 
                 return "Getting Flower: 3"
             end
         end
-    end, t78.value9 == 2)
-    v375("RaceV3", function()
+    end, Shared.Sea == 2)
+    NewOptionQueue("RaceV3", function()
         local RaceValue = Data.Race.Value
-        local v1191 = RaceValue == "Draco"
+        local val171 = RaceValue == "Draco"
 
-        if not v1191 then
-            v1191 = not Data.Race:FindFirstChild("Evolved")
+        if not val171 then
+            val171 = not Data.Race:FindFirstChild("Evolved")
 
-            if not v1191 then
-                v1191 = t78.value93.RaceV3 and t78.value93.RaceV3[RaceValue]
+            if not val171 then
+                val171 = Shared.Cache7.RaceV3 and Shared.Cache7.RaceV3[RaceValue]
             end
         end
 
-        if v1191 then
+        if val171 then
             return nil
         end
 
-        local Progress = u55:GetProgress("RaceV3", "Wenlocktoad", "1")
+        local Progress = Module:GetProgress("RaceV3", "Wenlocktoad", "1")
 
         if Progress == -2 then
-            if not t78.value93.RaceV3 then
-                t78.value93.RaceV3 = {
+            if not Shared.Cache7.RaceV3 then
+                Shared.Cache7.RaceV3 = {
 					[RaceValue] = true
 				}
             else
-                t78.value93.RaceV3[RaceValue] = true
+                Shared.Cache7.RaceV3[RaceValue] = true
             end
 
             return nil
@@ -6415,23 +6406,23 @@ function t7.StartFunctions(p254)
 
         if Progress == 0 or Progress == 2 then
             if Progress ~= 2 or Beli.Value >= 2000000 then
-                if LocalPlayer:DistanceFromCharacter(t78.value52.Position) < 5 then
-                    t78.value12("Wenlocktoad", Progress ~= 0 and "3" or "2")
+                if LocalPlayer:DistanceFromCharacter(Shared.Position22.Position) < 5 then
+                    Shared.FireRemote("Wenlocktoad", Progress ~= 0 and "3" or "2")
                 else
-                    MoveCharacter(t78.value52)
+                    MoveCharacter(Shared.Position22)
                 end
 
                 return true
             end
         elseif Progress == 1 then
             if RaceValue == "Fishman" then
-                return t78.value1.Sea(t78.value99.Shark)
+                return Shared.OptionIndex.Sea(Shared.Cache13.Shark)
             end
 
             if RaceValue == "Human" then
-                for _, v in ipairs(t78.value99.Human) do
-                    if t78.value17(v) then
-                        return v407(u55.Bosses[v], v)
+                for _, v in ipairs(Shared.Cache13.Human) do
+                    if Shared.IsSpawned(v) then
+                        return TryBossQuest(Module.Bosses[v], v)
                     end
                 end
 
@@ -6439,94 +6430,94 @@ function t7.StartFunctions(p254)
             end
 
             if RaceValue == "Mink" then
-                return t78.value1.ChestTween(" for Mink V3")
+                return Shared.OptionIndex.ChestTween(" for Mink V3")
             end
         end
-    end, t78.value9 == 2)
-    v375("SharkAnchor", function()
-        if t78.value13["Shark Anchor"] then
+    end, Shared.Sea == 2)
+    NewOptionQueue("SharkAnchor", function()
+        if Shared.Unlocked["Shark Anchor"] then
             return
         end
 
-        local SharkAnchor = t78.value101.SharkAnchor
+        local SharkAnchor = Shared.Cache15.SharkAnchor
 
-        if t78.value13["Monster Magnet"] then
-            return t78.value1.Sea(SharkAnchor.Terrorshark, false)
+        if Shared.Unlocked["Monster Magnet"] then
+            return Shared.OptionIndex.Sea(SharkAnchor.Terrorshark, false)
         end
 
-        local t90 = {}
-        local v1197 = false
+        local tbl86 = {}
+        local flag12 = false
 
         for k, v in pairs(SharkAnchor.Materials) do
-            local v1200 = k
+            local val172 = k
 
-            if v > t78.value14[v1200] then
-                local v1201 = SharkAnchor.Drops[v1200]
+            if v > Shared.Count[val172] then
+                local val173 = SharkAnchor.Drops[val172]
 
-                if v1201 then
-                    t90[v1201] = true
-                elseif v1200 == "Fool's Gold" then
-                    v1197 = SharkAnchor._Selected
+                if val173 then
+                    tbl86[val173] = true
+                elseif val172 == "Fool's Gold" then
+                    flag12 = SharkAnchor._Selected
                 end
             end
         end
 
-        if next(t90) then
-            return t78.value1.Sea(t90, v1197)
+        if next(tbl86) then
+            return Shared.OptionIndex.Sea(tbl86, flag12)
         end
 
-        t78.value12("CraftItem", "Check", "SharkAnchor")
-        t78.value12("CraftItem", "Craft", "SharkAnchor")
-    end, t78.value9 == 3)
-    v375("Sea", function(p283)
-        if not p283 then
-            p283 = v46.seaEnemy
+        Shared.FireRemote("CraftItem", "Check", "SharkAnchor")
+        Shared.FireRemote("CraftItem", "Craft", "SharkAnchor")
+    end, Shared.Sea == 3)
+    NewOptionQueue("Sea", function(arg198)
+        if not arg198 then
+            arg198 = settings.seaEnemy
         end
 
-        local SeaEvents = t78.value5:GetSeaEvents(t78.value94.SecondSea, p283)
+        local SeaEvents = Shared.SeaManager:GetSeaEvents(Shared.Cache8.SecondSea, arg198)
 
         if SeaEvents then
-            return true, t78.value5:attackSeaEvent(SeaEvents)
+            return true, Shared.SeaManager:attackSeaEvent(SeaEvents)
         end
 
-        if t78.value5:CanRepair() then
-            return t78.value5:RepairBoat()
+        if Shared.SeaManager:CanRepair() then
+            return Shared.SeaManager:RepairBoat()
         end
 
-        if v46.autoDriveBoat then
-            return t78.value5:DriveBoat()
+        if settings.autoDriveBoat then
+            return Shared.SeaManager:DriveBoat()
         end
-    end, t78.value9 == 2)
-    v375("Sea", function(p284, p285)
-        if not p284 then
-            p284 = v46.fishSelected
-        end
-
-        local v1206 = p285 ~= false
-
-        if v1206 then
-            v1206 = p285 or v46.boatSelected
+    end, Shared.Sea == 2)
+    NewOptionQueue("Sea", function(arg199, arg281)
+        if not arg199 then
+            arg199 = settings.fishSelected
         end
 
-        local SeaEvents = t78.value5:GetSeaEvents(t78.value94.ThirdSea, p284, v1206)
+        local val174 = arg281 ~= false
+
+        if val174 then
+            val174 = arg281 or settings.boatSelected
+        end
+
+        local SeaEvents = Shared.SeaManager:GetSeaEvents(Shared.Cache8.ThirdSea, arg199, val174)
 
         if SeaEvents then
-            return true, t78.value5:attackSeaEvent(SeaEvents)
+            return true, Shared.SeaManager:attackSeaEvent(SeaEvents)
         end
 
-        if t78.value5:CanRepair() then
-            return t78.value5:RepairBoat()
+        if Shared.SeaManager:CanRepair() then
+            return Shared.SeaManager:RepairBoat()
         end
 
-        if v46.autoDriveBoat then
-            return t78.value5:DriveBoat()
+        if settings.autoDriveBoat then
+            return Shared.SeaManager:DriveBoat()
         end
-    end, t78.value9 == 3)
-    v375("Rengoku", function()
-        local Rengoku = t78.value13.Rengoku
+    end, Shared.Sea == 3)
+    NewOptionQueue("Rengoku", function()
+        local Rengoku = Shared.Unlocked.Rengoku
 
         if not Rengoku then
-            Rengoku = v48.Level and Level.Value < 1350
+            Rengoku = enabledOptions.Level and Level.Value < 1350
         end
 
         if Rengoku then
@@ -6534,46 +6525,46 @@ function t7.StartFunctions(p254)
         end
 
         if VerifyTool("Library Key") then
-            return t78.value12("OpenLibrary")
+            return Shared.FireRemote("OpenLibrary")
         end
 
         if VerifyTool("Hidden Key") then
-            return t78.value12("OpenRengoku")
+            return Shared.FireRemote("OpenRengoku")
         end
 
-        if t78.value17("Awakened Ice Admiral") then
-            return v407(u55.Bosses["Awakened Ice Admiral"], "Awakened Ice Admiral")
+        if Shared.IsSpawned("Awakened Ice Admiral") then
+            return TryBossQuest(Module.Bosses["Awakened Ice Admiral"], "Awakened Ice Admiral")
         end
 
-        if Level.Value >= 1425 or not v48.Level then
-            local v1209 = t78.value18("Arctic Warrior", "Snow Lurker")
+        if Level.Value >= 1425 or not enabledOptions.Level then
+            local result52 = Shared.EnemySpawned("Arctic Warrior", "Snow Lurker")
 
-            if v1209 and v1209.PrimaryPart then
-                t78.value24(v1209)
+            if result52 and result52.PrimaryPart then
+                Shared.Attack(result52)
 
                 return true
             end
         end
-    end, t78.value9 == 2)
-    v375("Bartilo", function()
-        if Level.Value < 850 or t78.value13["Warrior Helmet"] then
+    end, Shared.Sea == 2)
+    NewOptionQueue("Bartilo", function()
+        if Level.Value < 850 or Shared.Unlocked["Warrior Helmet"] then
             return nil
         end
 
-        local Progress = u55:GetProgress("Bartilo", "BartiloQuestProgress")
+        local Progress = Module:GetProgress("Bartilo", "BartiloQuestProgress")
 
         if Progress.KilledSpring then
-            t78.value12("BartiloQuestProgress", "DidPlates")
+            Shared.FireRemote("BartiloQuestProgress", "DidPlates")
 
             return
         end
 
         if Progress.KilledBandits then
-            if t78.value17("Jeremy") then
-                local v1211 = t78.value18("Jeremy")
+            if Shared.IsSpawned("Jeremy") then
+                local result53 = Shared.EnemySpawned("Jeremy")
 
-                if v1211 and v1211.PrimaryPart then
-                    t78.value24(v1211)
+                if result53 and result53.PrimaryPart then
+                    Shared.Attack(result53)
                 else
                     MoveCharacter(CFrame.new(2316, 449, 787))
                 end
@@ -6581,54 +6572,54 @@ function t7.StartFunctions(p254)
                 return true
             end
         elseif not Progress.KilledBandits then
-            if t78.value2:VerifyQuest("Swan Pirate") and t78.value2:VerifyQuest("50") then
-                local v1212 = t78.value18("Swan Pirate")
+            if Shared.QuestManager:VerifyQuest("Swan Pirate") and Shared.QuestManager:VerifyQuest("50") then
+                local result54 = Shared.EnemySpawned("Swan Pirate")
 
-                if v1212 and v1212.PrimaryPart then
-                    t78.value24(v1212)
+                if result54 and result54.PrimaryPart then
+                    Shared.Attack(result54)
                 else
-                    t78.value6:TweenToCFrameQueue(t78.value96["Swan Pirate"])
+                    Shared.TweenManager:TweenToCFrameQueue(Shared.Cache10["Swan Pirate"])
                 end
             else
-                t78.value2:StartQuest("BartiloQuest", 1, t78.value49)
+                Shared.QuestManager:StartQuest("BartiloQuest", 1, Shared.Position19)
             end
 
             return true
         end
-    end, t78.value9 == 2)
-    v375("Yama", function()
-        if t78.value13.Yama then
+    end, Shared.Sea == 2)
+    NewOptionQueue("Yama", function()
+        if Shared.Unlocked.Yama then
             return nil
         end
 
-        if u55:GetProgress("EliteProgress", "EliteHunter", "Progress") >= 30 then
-            if LocalPlayer:DistanceFromCharacter(t78.value45.Position) < 5 then
-                pcall(v420)
+        if Module:GetProgress("EliteProgress", "EliteHunter", "Progress") >= 30 then
+            if LocalPlayer:DistanceFromCharacter(Shared.Position15.Position) < 5 then
+                pcall(helper41)
                 task.wait(1)
             else
-                MoveCharacter(t78.value45)
+                MoveCharacter(Shared.Position15)
             end
 
             return true
         end
-    end, t78.value9 == 3)
-    v375("Citizen", function()
-        if Level.Value < 1800 or t78.value13["Musketeer Hat"] then
+    end, Shared.Sea == 3)
+    NewOptionQueue("Citizen", function()
+        if Level.Value < 1800 or Shared.Unlocked["Musketeer Hat"] then
             return nil
         end
 
-        local Progress = u55:GetProgress("Citizen", "CitizenQuestProgress")
-        local NpcVectorCFrame = t78.value3:GetNpcVectorCFrame("Citizen")
+        local Progress = Module:GetProgress("Citizen", "CitizenQuestProgress")
+        local NpcVectorCFrame = Shared.FarmManager:GetNpcVectorCFrame("Citizen")
 
         if Progress.KilledBoss then
-            return true, MoveCharacter(t78.value53)
+            return true, MoveCharacter(Shared.Position23)
         end
 
         if Progress.KilledBandits then
-            if t78.value17("Captain Elephant") then
-                if not t78.value2:VerifyQuest("Captain Elephant") then
+            if Shared.IsSpawned("Captain Elephant") then
+                if not Shared.QuestManager:VerifyQuest("Captain Elephant") then
                     if LocalPlayer:DistanceFromCharacter(NpcVectorCFrame.Position) >= 5 then
-                        t78.value12("CitizenQuestProgress", "Citizen")
+                        Shared.FireRemote("CitizenQuestProgress", "Citizen")
                     else
                         MoveCharacter(NpcVectorCFrame)
                     end
@@ -6636,12 +6627,12 @@ function t7.StartFunctions(p254)
                     return true
                 end
 
-                local v1215 = t78.value18("Captain Elephant")
+                local result55 = Shared.EnemySpawned("Captain Elephant")
 
-                if v1215 and v1215.PrimaryPart then
-                    t78.value24(v1215)
+                if result55 and result55.PrimaryPart then
+                    Shared.Attack(result55)
                 else
-                    MoveCharacter(t78.value54)
+                    MoveCharacter(Shared.Position24)
                 end
 
                 return true
@@ -6650,60 +6641,60 @@ function t7.StartFunctions(p254)
             return
         end
 
-        if t78.value2:VerifyQuest("Forest Pirate") and t78.value2:VerifyQuest("50") then
-            local v1216 = t78.value18("Forest Pirate")
+        if Shared.QuestManager:VerifyQuest("Forest Pirate") and Shared.QuestManager:VerifyQuest("50") then
+            local result56 = Shared.EnemySpawned("Forest Pirate")
 
-            if v1216 and v1216.PrimaryPart then
-                t78.value24(v1216, true)
+            if result56 and result56.PrimaryPart then
+                Shared.Attack(result56, true)
             else
-                t78.value6:TweenToCFrameQueue(t78.value96["Forest Pirate"])
+                Shared.TweenManager:TweenToCFrameQueue(Shared.Cache10["Forest Pirate"])
             end
 
             return true
         end
 
         if LocalPlayer:DistanceFromCharacter(NpcVectorCFrame.Position) >= 5 then
-            t78.value12("CitizenQuest", 1)
+            Shared.FireRemote("CitizenQuest", 1)
         else
             MoveCharacter(NpcVectorCFrame)
         end
 
         return true
-    end, t78.value9 == 3)
-    v375("RainbowHaki", function()
-        if t78.value79 then
+    end, Shared.Sea == 3)
+    NewOptionQueue("RainbowHaki", function()
+        if Shared.State15 then
             return
         end
 
-        local v1217 = t78.value2:VerifyQuest(t78.value87)
+        local verifyQuestResult = Shared.QuestManager:VerifyQuest(Shared.Cache2)
 
-        if v1217 then
-            if t78.value17(v1217) then
-                return v407(u55.Bosses[v1217], v1217, true)
+        if verifyQuestResult then
+            if Shared.IsSpawned(verifyQuestResult) then
+                return TryBossQuest(Module.Bosses[verifyQuestResult], verifyQuestResult, true)
             end
         else
-            if t78.value12("HornedMan") ~= 1 then
-                t78.value12("HornedMan", "Bet")
+            if Shared.FireRemote("HornedMan") ~= 1 then
+                Shared.FireRemote("HornedMan", "Bet")
 
                 return
             end
 
-            t78.value79 = true
+            Shared.State15 = true
         end
-    end, t78.value9 == 3)
-    v375("EliteHunter", function()
-        local v1218 = t78.value2:VerifyQuest(t78.value20)
-        local DoughKing = v48.DoughKing
+    end, Shared.Sea == 3)
+    NewOptionQueue("EliteHunter", function()
+        local verifyQuestResult2 = Shared.QuestManager:VerifyQuest(Shared.Elites)
+        local DoughKing = enabledOptions.DoughKing
 
         if not DoughKing then
-            DoughKing = v48.CakePrince or v48.RipIndra
+            DoughKing = enabledOptions.CakePrince or enabledOptions.RipIndra
         end
 
         if DoughKing then
-            DoughKing = t78.value17("rip_indra True Form")
+            DoughKing = Shared.IsSpawned("rip_indra True Form")
 
             if not DoughKing then
-                DoughKing = t78.value17("Dough King") or t78.value17("Cake Prince")
+                DoughKing = Shared.IsSpawned("Dough King") or Shared.IsSpawned("Cake Prince")
             end
 
             if not DoughKing then
@@ -6715,194 +6706,194 @@ function t7.StartFunctions(p254)
             return nil
         end
 
-        if v1218 then
-            local v1220 = t78.value18(v1218)
+        if verifyQuestResult2 then
+            local result57 = Shared.EnemySpawned(verifyQuestResult2)
 
-            if v1220 and v1220.PrimaryPart then
-                return "Killing Elite Hunter: " .. v1218, t78.value24(v1220)
+            if result57 and result57.PrimaryPart then
+                return "Killing Elite Hunter: " .. verifyQuestResult2, Shared.Attack(result57)
             end
         else
-            local EnemyByTag = u55.Enemies:GetEnemyByTag("Elite")
+            local EnemyByTag = Module.Enemies:GetEnemyByTag("Elite")
 
             if EnemyByTag then
-                local NpcVectorCFrame = t78.value3:GetNpcVectorCFrame("Elite Hunter")
+                local NpcVectorCFrame = Shared.FarmManager:GetNpcVectorCFrame("Elite Hunter")
 
                 MoveCharacter(NpcVectorCFrame)
-                t78.value6:InteractWithNpc(NpcVectorCFrame, "EliteHunter")
+                Shared.TweenManager:InteractWithNpc(NpcVectorCFrame, "EliteHunter")
 
                 return "Getting Elite Quest: " .. EnemyByTag.Name
             end
         end
-    end, t78.value9 == 3)
-    v375("BerryBush", function(p286, p287)
-        local v1225 = u55.Berry(p286)
+    end, Shared.Sea == 3)
+    NewOptionQueue("BerryBush", function(arg1100, arg282)
+        local result58 = Module.Berry(arg1100)
 
-        if v1225 and v1225.Parent then
-            local v1226, v1227, v1228 = pairs(v1225:GetAttributes())
-            local v1229, v1230 = v1226(v1227, v1228)
+        if result58 and result58.Parent then
+            local val175, val176, val177 = pairs(result58:GetAttributes())
+            local val178, val179 = val175(val176, val177)
 
-            if v1229 then
-                local Parent = v1225.Parent
+            if val178 then
+                local Parent = result58.Parent
                 local GetAttribute = Parent.GetAttribute
-                local v1233 = Parent:GetPivot() * GetAttribute(Parent, v1229)
+                local pivot = Parent:GetPivot() * GetAttribute(Parent, val178)
 
-                if LocalPlayer:DistanceFromCharacter(v1233.Position) < 3 then
-                    t78.value61:InvokeServer(Parent.Name, v1229)
+                if LocalPlayer:DistanceFromCharacter(pivot.Position) < 3 then
+                    Shared.ClaimBerry:InvokeServer(Parent.Name, val178)
                 else
-                    MoveCharacter(v1233)
+                    MoveCharacter(pivot)
                 end
 
-                return "Collecting Berry: " .. v1230
+                return "Collecting Berry: " .. val179
             end
         else
-            if not p287 then
-                p287 = p287 == nil and v46.BerryHop
+            if not arg282 then
+                arg282 = arg282 == nil and settings.BerryHop
             end
 
-            if p287 then
-                u55:ServerHop()
+            if arg282 then
+                Module:ServerHop()
             end
         end
     end)
-    v375("ThirdSea", function()
+    NewOptionQueue("ThirdSea", function()
         if Level.Value < 1500 or Level.Value >= 1850 then
             return nil
         end
 
-        local Progress = u55:GetProgress("Zou1", "ZQuestProgress")
+        local Progress = Module:GetProgress("Zou1", "ZQuestProgress")
 
-        if not t78.value93.Zou2 and not u55:GetProgress("Zou2", "ZQuestProgress", "Check") then
-            if u55:GetProgress("Unlockables", "GetUnlockables").FlamingoAccess then
-                return t78.value1.DonSwan()
+        if not Shared.Cache7.Zou2 and not Module:GetProgress("Zou2", "ZQuestProgress", "Check") then
+            if Module:GetProgress("Unlockables", "GetUnlockables").FlamingoAccess then
+                return Shared.OptionIndex.DonSwan()
             end
 
             return nil
         end
 
-        if not t78.value93.Zou2 then
-            t78.value93.Zou2 = true
+        if not Shared.Cache7.Zou2 then
+            Shared.Cache7.Zou2 = true
         end
 
-        if LocalPlayer:DistanceFromCharacter(t78.value48.Position) < 1200 then
+        if LocalPlayer:DistanceFromCharacter(Shared.Position18.Position) < 1200 then
             local rip_indra = Enemies:FindFirstChild("rip_indra")
-            local v1236 = rip_indra
+            local val180 = rip_indra
 
             if rip_indra then
-                v1236 = rip_indra.PrimaryPart and rip_indra.PrimaryPart.Position.Y > 0
+                val180 = rip_indra.PrimaryPart and rip_indra.PrimaryPart.Position.Y > 0
             end
 
-            if v1236 then
-                t78.value24(rip_indra)
+            if val180 then
+                Shared.Attack(rip_indra)
             end
 
             return true
         end
 
         if Progress.KilledIndraBoss then
-            return u55:TravelTo(3)
+            return Module:TravelTo(3)
         end
 
-        if LocalPlayer:DistanceFromCharacter(t78.value31.Position) < 5 then
-            t78.value12("ZQuestProgress", "Begin")
-            v38.OnFarm = false
+        if LocalPlayer:DistanceFromCharacter(Shared.Position.Position) < 5 then
+            Shared.FireRemote("ZQuestProgress", "Begin")
+            _ENV.OnFarm = false
 
-            if not (LocalPlayer:DistanceFromCharacter(t78.value48.Position) < 1200) then
-                local _ = v48[v46.RunningOption]
+            if not (LocalPlayer:DistanceFromCharacter(Shared.Position18.Position) < 1200) then
+                local _ = enabledOptions[settings.RunningOption]
             end
 
             repeat
                 task.wait()
-            until LocalPlayer:DistanceFromCharacter(t78.value48.Position) < 1200 or not v48[v46.RunningOption]
+            until LocalPlayer:DistanceFromCharacter(Shared.Position18.Position) < 1200 or not enabledOptions[settings.RunningOption]
 
             return true
         end
 
-        MoveCharacter(t78.value31)
-    end, t78.value9 == 2)
-    v375("DonSwan", function()
-        if not t78.value13["Warrior Helmet"] then
+        MoveCharacter(Shared.Position)
+    end, Shared.Sea == 2)
+    NewOptionQueue("DonSwan", function()
+        if not Shared.Unlocked["Warrior Helmet"] then
             return nil
         end
 
-        if t78.value17("Don Swan") then
-            local v1238 = t78.value18("Don Swan")
+        if Shared.IsSpawned("Don Swan") then
+            local result59 = Shared.EnemySpawned("Don Swan")
 
-            if v1238 and v1238.PrimaryPart then
-                t78.value24(v1238)
+            if result59 and result59.PrimaryPart then
+                Shared.Attack(result59)
             else
-                MoveCharacter(t78.value50)
+                MoveCharacter(Shared.Position20)
             end
 
             return true
         end
-    end, t78.value9 == 2)
-    v375("SecondSea", function()
+    end, Shared.Sea == 2)
+    NewOptionQueue("SecondSea", function()
         if Level.Value < 700 then
             return
         end
 
-        local Progress = u55:GetProgress("Dressrosa", "DressrosaQuestProgress")
+        local Progress = Module:GetProgress("Dressrosa", "DressrosaQuestProgress")
         local KilledIceBoss = Progress.KilledIceBoss
 
         if KilledIceBoss then
-            KilledIceBoss = not t78.value13["Warrior Helmet"] and Level.Value < 1250
+            KilledIceBoss = not Shared.Unlocked["Warrior Helmet"] and Level.Value < 1250
         end
 
         if KilledIceBoss then
-            return u55:TravelTo(2)
+            return Module:TravelTo(2)
         end
 
         if not Progress.TalkedDetective then
-            t78.value12("DressrosaQuestProgress", "Detective")
+            Shared.FireRemote("DressrosaQuestProgress", "Detective")
         elseif not Progress.UsedKey then
             if not VerifyTool("Key") then
-                t78.value12("DressrosaQuestProgress", "Detective")
+                Shared.FireRemote("DressrosaQuestProgress", "Detective")
             end
 
-            t78.value11("Key")
-            t78.value12("DressrosaQuestProgress", "UseKey")
+            Shared.EquipTool("Key")
+            Shared.FireRemote("DressrosaQuestProgress", "UseKey")
         elseif not Progress.KilledIceBoss then
-            local v1241 = t78.value18("Ice Admiral")
+            local result60 = Shared.EnemySpawned("Ice Admiral")
 
-            if v1241 and v1241.PrimaryPart then
-                t78.value24(v1241)
+            if result60 and result60.PrimaryPart then
+                Shared.Attack(result60)
             else
-                MoveCharacter(t78.value37)
+                MoveCharacter(Shared.Position7)
             end
         end
 
         return true
-    end, t78.value9 == 1)
-    v375("Order", function(p288)
+    end, Shared.Sea == 1)
+    NewOptionQueue("Order", function(arg1101)
         local Order = Enemies:FindFirstChild("Order")
 
-        if t78.value10(Order) and Order.PrimaryPart then
-            return "Defeating Law", t78.value24(Order, true)
+        if Shared.IsAlive(Order) and Order.PrimaryPart then
+            return "Defeating Law", Shared.Attack(Order, true)
         end
 
         if not VerifyTool("Microchip") and not Order then
-            return v418()
+            return helper39()
         end
 
-        if VerifyTool("Microchip") and p288 or v46.StartLaw then
-            return pcall(v419)
+        if VerifyTool("Microchip") and arg1101 or settings.StartLaw then
+            return pcall(helper40)
         end
-    end, t78.value9 == 2)
-    v375("Saber", function()
-        if Level.Value < 200 or t78.value13.Saber then
+    end, Shared.Sea == 2)
+    NewOptionQueue("Saber", function()
+        if Level.Value < 200 or Shared.Unlocked.Saber then
             return nil
         end
 
-        local Progress = u55:GetProgress("Shanks", "ProQuestProgress")
+        local Progress = Module:GetProgress("Shanks", "ProQuestProgress")
 
         if Progress.UsedRelic then
-            if t78.value17("Saber Expert") then
-                local v1245 = t78.value18("Saber Expert")
+            if Shared.IsSpawned("Saber Expert") then
+                local result61 = Shared.EnemySpawned("Saber Expert")
 
-                if v1245 and v1245.PrimaryPart then
-                    t78.value24(v1245)
+                if result61 and result61.PrimaryPart then
+                    Shared.Attack(result61)
                 else
-                    MoveCharacter(t78.value43)
+                    MoveCharacter(Shared.Position13)
                 end
 
                 return true
@@ -6910,9 +6901,9 @@ function t7.StartFunctions(p254)
         else
             if Progress.KilledMob then
                 if VerifyTool("Relic") then
-                    t78.value12("ProQuestProgress", "PlaceRelic")
+                    Shared.FireRemote("ProQuestProgress", "PlaceRelic")
                 else
-                    t78.value12("ProQuestProgress", "RichSon")
+                    Shared.FireRemote("ProQuestProgress", "RichSon")
                 end
 
                 return true
@@ -6921,47 +6912,47 @@ function t7.StartFunctions(p254)
             if not Progress.UsedCup then
                 if Progress.UsedTorch then
                     if VerifyTool("Cup") then
-                        t78.value12("ProQuestProgress", "FillCup", LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Cup") or LocalPlayer.Backpack:FindFirstChild("Cup"))
+                        Shared.FireRemote("ProQuestProgress", "FillCup", LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Cup") or LocalPlayer.Backpack:FindFirstChild("Cup"))
                     else
-                        t78.value12("ProQuestProgress", "GetCup")
+                        Shared.FireRemote("ProQuestProgress", "GetCup")
                     end
 
-                    t78.value12("ProQuestProgress", "SickMan")
+                    Shared.FireRemote("ProQuestProgress", "SickMan")
 
                     return true
                 end
                 local _next = next
                 local Plates = Progress.Plates
-                local v1248
+                local val181
                 repeat
-                    local v1249
+                    local val182
 
-                    v1248, v1249 = _next(Plates, v1248)
+                    val181, val182 = _next(Plates, val181)
 
-                    if not v1248 then
+                    if not val181 then
                         if VerifyTool("Torch") then
-                            t78.value12("ProQuestProgress", "DestroyTorch")
+                            Shared.FireRemote("ProQuestProgress", "DestroyTorch")
                         else
-                            t78.value12("ProQuestProgress", "GetTorch")
+                            Shared.FireRemote("ProQuestProgress", "GetTorch")
                         end
 
                         return true
                     end
-                until not v1249
-                t78.value12("ProQuestProgress", "Plate", v1248)
+                until not val182
+                Shared.FireRemote("ProQuestProgress", "Plate", val181)
 
                 return true
             end
 
             if not Progress.TalkedSon then
-                return t78.value12("ProQuestProgress", "RichSon")
+                return Shared.FireRemote("ProQuestProgress", "RichSon")
             end
 
-            if t78.value17("Mob Leader") then
-                local v1250 = t78.value18("Mob Leader")
+            if Shared.IsSpawned("Mob Leader") then
+                local result62 = Shared.EnemySpawned("Mob Leader")
 
-                if v1250 and v1250.PrimaryPart then
-                    t78.value24(v1250)
+                if result62 and result62.PrimaryPart then
+                    Shared.Attack(result62)
                 else
                     MoveCharacter(CFrame.new(-2880, 9, 5430))
                 end
@@ -6969,297 +6960,297 @@ function t7.StartFunctions(p254)
                 return true
             end
         end
-    end, t78.value9 == 1)
-    v375("PoleV1", function()
-        if Level.Value < 450 or t78.value13["Pole (1st Form)"] then
+    end, Shared.Sea == 1)
+    NewOptionQueue("PoleV1", function()
+        if Level.Value < 450 or Shared.Unlocked["Pole (1st Form)"] then
             return
         end
 
-        if t78.value17("Thunder God") then
-            local v1251 = t78.value18("Thunder God")
+        if Shared.IsSpawned("Thunder God") then
+            local result63 = Shared.EnemySpawned("Thunder God")
 
-            if v1251 and v1251.PrimaryPart then
-                t78.value24(v1251)
+            if result63 and result63.PrimaryPart then
+                Shared.Attack(result63)
             else
-                MoveCharacter(t78.value46)
+                MoveCharacter(Shared.Position16)
             end
 
             return true
         end
-    end, t78.value9 == 1)
-    v375("TheSaw", function()
-        if Level.Value < 100 or t78.value13["Shark Saw"] then
+    end, Shared.Sea == 1)
+    NewOptionQueue("TheSaw", function()
+        if Level.Value < 100 or Shared.Unlocked["Shark Saw"] then
             return nil
         end
 
-        if t78.value17("The Saw") then
-            local v1252 = t78.value18("The Saw")
+        if Shared.IsSpawned("The Saw") then
+            local result64 = Shared.EnemySpawned("The Saw")
 
-            if v1252 and v1252.PrimaryPart then
-                t78.value24(v1252)
+            if result64 and result64.PrimaryPart then
+                Shared.Attack(result64)
             else
-                MoveCharacter(t78.value47)
+                MoveCharacter(Shared.Position17)
             end
 
             return true
         end
-    end, t78.value9 == 1)
-    v375("SoulReaper", function()
-        local v1253 = t78.value18("Soul Reaper")
+    end, Shared.Sea == 1)
+    NewOptionQueue("SoulReaper", function()
+        local result65 = Shared.EnemySpawned("Soul Reaper")
 
-        if v1253 and v1253.PrimaryPart then
-            t78.value24(v1253)
+        if result65 and result65.PrimaryPart then
+            Shared.Attack(result65)
 
             return true
         end
 
         if VerifyTool("Hallow Essence") then
-            t78.value11("Hallow Essence")
-            MoveCharacter(t78.value36)
+            Shared.EquipTool("Hallow Essence")
+            MoveCharacter(Shared.Position6)
 
             return true
         end
-    end, t78.value9 == 3)
-    v375("RipIndra", function()
-        if t78.value17("rip_indra True Form") then
-            local v1254 = t78.value18("rip_indra True Form")
+    end, Shared.Sea == 3)
+--[[    NewOptionQueue("RipIndra", function()
+        if Shared.IsSpawned("rip_indra True Form") then
+            local result66 = Shared.EnemySpawned("rip_indra True Form")
 
-            if v1254 and v1254.PrimaryPart then
-                t78.value24(v1254)
+            if result66 and result66.PrimaryPart then
+                Shared.Attack(result66)
             else
-                MoveCharacter(t78.value34)
+                MoveCharacter(Shared.Position4)
             end
 
             return "Defeating: rip_indra True Form"
         end
 
         if VerifyTool("God's Chalice") then
-            local v1255 = v412()
+            local result67 = helper33()
 
-            if v1255 == 1 then
+            if result67 == 1 then
                 return "Activating Places"
             end
 
-            if v1255 == 2 then
-                return "God's Chalice: rip_indra True Form", MoveCharacter(t78.value35)
+            if result67 == 2 then
+                return "God's Chalice: rip_indra True Form", MoveCharacter(Shared.Position5)
             end
         end
-    end, t78.value9 == 3)
-    v375("BossSelected", function()
-        local BossSelected = v46.BossSelected
+    end, Shared.Sea == 3)]]
+    NewOptionQueue("BossSelected", function()
+        local BossSelected = settings.BossSelected
 
-        if BossSelected and t78.value17(BossSelected) then
-            return v407(u55.Bosses[BossSelected], BossSelected)
+        if BossSelected and Shared.IsSpawned(BossSelected) then
+            return TryBossQuest(Module.Bosses[BossSelected], BossSelected)
         end
     end)
-    v375("AllBosses", function()
-        local v1257 = v406()
+    NewOptionQueue("AllBosses", function()
+        local result68 = helper28()
 
-        if v1257 then
-            return v407(u55.Bosses[v1257], v1257)
+        if result68 then
+            return TryBossQuest(Module.Bosses[result68], result68)
         end
     end)
-    v375("MasterySwords", function()
-        local value69 = t78.value69
+    NewOptionQueue("MasterySwords", function()
+        local value69 = Shared.State5
 
         if value69 then
-            value69 = t78.value70
+            value69 = Shared.State6
 
             if not value69 then
-                local value69_2 = t78.value69
+                local value69_2 = Shared.State5
 
-                value69 = t78.value15[value69_2] < t78.value7
+                value69 = Shared.Mastery[value69_2] < Shared.MaxMastery
             end
         end
 
         if value69 then
-            if not VerifyTool(t78.value69) then
-                return t78.value12("LoadItem", t78.value69)
+            if not VerifyTool(Shared.State5) then
+                return Shared.FireRemote("LoadItem", Shared.State5)
             end
 
-            local value69_3 = t78.value69
+            local value69_3 = Shared.State5
 
-            t78.value11(value69_3)
-            t78.value3.ToolDebounce()
+            Shared.EquipTool(value69_3)
+            Shared.FarmManager.ToolDebounce()
 
-            local TyrantSkies = v48.TyrantSkies
+            local TyrantSkies = enabledOptions.TyrantSkies
 
             if not TyrantSkies then
-                TyrantSkies = v48.CakePrince
+                TyrantSkies = enabledOptions.CakePrince
 
                 if not TyrantSkies then
-                    TyrantSkies = v48.DoughKing
+                    TyrantSkies = enabledOptions.DoughKing
 
                     if not TyrantSkies then
-                        TyrantSkies = v48.Bones
+                        TyrantSkies = enabledOptions.Bones
 
                         if not TyrantSkies then
-                            TyrantSkies = v48.Level or v48.Material
+                            TyrantSkies = enabledOptions.Level or enabledOptions.Material
                         end
                     end
                 end
             end
 
             if not TyrantSkies then
-                return t78.value1.Bones()
+                return Shared.OptionIndex.Bones()
             end
         else
-            local v1262
-            local n13 = -1
-            for k, v in pairs(t78.value16) do
-                local v1266 = k
-                local v1267 = v.Type == "Sword"
+            local val183
+            local num15 = -1
+            for k, v in pairs(Shared.Items) do
+                local val184 = k
+                local val185 = v.Type == "Sword"
 
-                if v1267 then
-                    v1267 = t78.value15[v1266] < t78.value7 and n13 <= v.Rarity
+                if val185 then
+                    val185 = Shared.Mastery[val184] < Shared.MaxMastery and num15 <= v.Rarity
                 end
 
-                if v1267 then
-                    v1262 = v1266
-                    n13 = v.Rarity
+                if val185 then
+                    val183 = val184
+                    num15 = v.Rarity
                 end
             end
-            if v1262 then
-                t78.value69 = v1262
+            if val183 then
+                Shared.State5 = val183
 
                 return
             end
-            t78.value70 = true
+            Shared.State6 = true
         end
-    end, t78.value9 == 3)
-    v375("TyrantSkies", function()
-        local v1268 = t78.value18("Tyrant of the Skies")
+    end, Shared.Sea == 3)
+    NewOptionQueue("TyrantSkies", function()
+        local result69 = Shared.EnemySpawned("Tyrant of the Skies")
 
-        if v1268 then
-            local t91 = { t78.value24(v1268, true) }
+        if result69 then
+            local tbl87 = { Shared.Attack(result69, true) }
 
-            return "Defeating Tyrant of the Skies", v1(t91)
+            return "Defeating Tyrant of the Skies", unpackValues(tbl87)
         end
 
-        if not t78.value72 then
-            t78.value72 = Map.TikiOutpost:FindFirstChild("Eye4", true)
+        if not Shared.State8 then
+            Shared.State8 = Map.TikiOutpost:FindFirstChild("Eye4", true)
 
             return false
         end
 
-        if t78.value72.Transparency == 0 then
-            if v413() then
-                local PrimaryPart = t78.value71.PrimaryPart
+        if Shared.State8.Transparency == 0 then
+            if helper34() then
+                local PrimaryPart = Shared.State7.PrimaryPart
 
-                t78.value11(t78.value5:GetRandomWeapon(), true)
-                u55.UseSkills(PrimaryPart.CFrame, v46.MasterySkills)
+                Shared.EquipTool(Shared.SeaManager:GetRandomWeapon(), true)
+                Module.UseSkills(PrimaryPart.CFrame, settings.MasterySkills)
 
                 return "Breaking Breakables", MoveCharacter(PrimaryPart.CFrame)
             end
 
-            return "Waiting Breakables", MoveCharacter(t78.value55)
+            return "Waiting Breakables", MoveCharacter(Shared.Position25)
         end
 
-        local ClosestByTag = u55.Enemies:GetClosestByTag("TyrantSkies")
+        local ClosestByTag = Module.Enemies:GetClosestByTag("TyrantSkies")
 
-        if not t78.value2:VerifyQuest("Skull Slayer") and v403("Tiki Quest Giver 3", 2575, ClosestByTag) then
-            t78.value2:StartQuest("TikiQuest3", 2, t78.value76)
+        if not Shared.QuestManager:VerifyQuest("Skull Slayer") and helper25("Tiki Quest Giver 3", 2575, ClosestByTag) then
+            Shared.QuestManager:StartQuest("TikiQuest3", 2, Shared.State12)
         elseif ClosestByTag and ClosestByTag.PrimaryPart then
-            t78.value24(ClosestByTag, true, true)
+            Shared.Attack(ClosestByTag, true, true)
         else
-            MoveCharacter(t78.value56)
+            MoveCharacter(Shared.Position26)
         end
 
         return "Making Red Eyes"
-    end, t78.value9 == 3)
-    v375("DoughKing", function()
-        local v1272 = t78.value18("Dough King") or t78.value18("Cake Prince")
+    end, Shared.Sea == 3)
+    NewOptionQueue("DoughKing", function()
+        local result70 = Shared.EnemySpawned("Dough King") or Shared.EnemySpawned("Cake Prince")
 
         if VerifyTool("Red Key") then
-            t78.value12("CakeScientist", "Check")
+            Shared.FireRemote("CakeScientist", "Check")
 
             return true
         end
 
-        if v1272 and v1272.PrimaryPart then
-            t78.value24(v1272)
+        if result70 and result70.PrimaryPart then
+            Shared.Attack(result70)
 
             return true
         end
 
         if not VerifyTool("Sweet Chalice") and VerifyTool("God's Chalice") then
-            if t78.value14["Conjured Cocoa"] < 10 then
-                return t78.value3:Material("Conjured Cocoa")
+            if Shared.Count["Conjured Cocoa"] < 10 then
+                return Shared.FarmManager:Material("Conjured Cocoa")
             end
 
-            MoveCharacter(t78.value39)
-            t78.value6:InteractWithNpc(t78.value39, "SweetChaliceNpc")
+            MoveCharacter(Shared.Position9)
+            Shared.TweenManager:InteractWithNpc(Shared.Position9, "SweetChaliceNpc")
 
             return true
         end
 
-        return v411()
-    end, t78.value9 == 3)
-    v375("CakePrince", function()
-        if v48.DoughKing then
+        return helper32()
+    end, Shared.Sea == 3)
+    NewOptionQueue("CakePrince", function()
+        if enabledOptions.DoughKing then
             return nil
         end
 
-        local v1273 = t78.value18("Dough King") or t78.value18("Cake Prince")
+        local result71 = Shared.EnemySpawned("Dough King") or Shared.EnemySpawned("Cake Prince")
 
-        if v1273 and v1273.PrimaryPart then
-            t78.value24(v1273)
+        if result71 and result71.PrimaryPart then
+            Shared.Attack(result71)
 
             return true
         end
 
-        return v411()
-    end, t78.value9 == 3)
-    v375("ChestTween", function(p289, p290)
-        local v1276 = u55.Chests()
+        return helper32()
+    end, Shared.Sea == 3)
+    NewOptionQueue("ChestTween", function(arg1102, arg283)
+        local result72 = Module.Chests()
 
-        if v1276 then
-            local Pivot = v1276:GetPivot(p290)
+        if result72 then
+            local Pivot = result72:GetPivot(arg283)
 
             if LocalPlayer:DistanceFromCharacter(Pivot.Position) < 3 then
-                local v1278 = Pivot + t78.value28
+                local val186 = Pivot + Shared.OffsetUp5
 
-                MoveCharacter(v1278)
+                MoveCharacter(val186)
                 task.wait(0.15)
             else
                 MoveCharacter(Pivot)
             end
 
-            return "Collecting Chest" .. (p289 or "")
+            return "Collecting Chest" .. (arg1102 or "")
         end
     end)
-    v375("Ectoplasm", function()
-        local v1279 = t78.value18(t78.value23)
+    NewOptionQueue("Ectoplasm", function()
+        local result73 = Shared.EnemySpawned(Shared.Ectoplasm)
 
-        if v1279 and v1279.PrimaryPart then
-            return "Killing: " .. v1279.Name, t78.value24(v1279, true, true)
+        if result73 and result73.PrimaryPart then
+            return "Killing: " .. result73.Name, Shared.Attack(result73, true, true)
         end
 
-        return "Waiting for: Enemy Spawn", MoveCharacter(t78.value33)
-    end, t78.value9 == 2)
-    v375("Bones", function()
-        if v48.Level and Level.Value < t78.value8 then
+        return "Waiting for: Enemy Spawn", MoveCharacter(Shared.Position3)
+    end, Shared.Sea == 2)
+    NewOptionQueue("Bones", function()
+        if enabledOptions.Level and Level.Value < Shared.MaxLevel then
             return
         end
 
-        local ClosestByTag = u55.Enemies:GetClosestByTag("Bones")
+        local ClosestByTag = Module.Enemies:GetClosestByTag("Bones")
 
-        if not t78.value2:VerifyQuest(t78.value21[4]) and v403("Haunted Castle Quest Giver 2", 2050, Target) then
-            t78.value2:StartQuest("HauntedQuest2", 2, t78.value76)
+        if not Shared.QuestManager:VerifyQuest(Shared.Bones[4]) and helper25("Haunted Castle Quest Giver 2", 2050, Target) then
+            Shared.QuestManager:StartQuest("HauntedQuest2", 2, Shared.State12)
 
             return true
         end
 
         if ClosestByTag and ClosestByTag.PrimaryPart then
-            return "Killing: " .. ClosestByTag.Name, t78.value24(ClosestByTag, true, true)
+            return "Killing: " .. ClosestByTag.Name, Shared.Attack(ClosestByTag, true, true)
         end
 
-        local t92 = { MoveCharacter(t78.value42) }
+        local tbl88 = { MoveCharacter(Shared.Position12) }
 
-        return "Waiting for: Enemy Spawn", v1(t92)
-    end, t78.value9 == 3)
-    v375("Level", function()
-        local Quest = t78.value2:GetQuest()
+        return "Waiting for: Enemy Spawn", unpackValues(tbl88)
+    end, Shared.Sea == 3)
+    NewOptionQueue("Level", function()
+        local Quest = Shared.QuestManager:GetQuest()
 
         if not Quest then
             return nil
@@ -7267,131 +7258,131 @@ function t7.StartFunctions(p254)
 
         local EnemyName = Quest.Enemy.Name
         local EnemyPosition = Quest.Enemy.Position
-        local v1285 = t78.value2:VerifyQuest(EnemyName)
+        local verifyQuestResult3 = Shared.QuestManager:VerifyQuest(EnemyName)
 
-        if v1285 and u55.IsBoss(v1285) then
-            return v407(u55.Bosses[v1285], v1285, false)
+        if verifyQuestResult3 and Module.IsBoss(verifyQuestResult3) then
+            return TryBossQuest(Module.Bosses[verifyQuestResult3], verifyQuestResult3, false)
         end
 
-        if v1285 then
-            local v1286 = t78.value18(v1285)
+        if verifyQuestResult3 then
+            local result74 = Shared.EnemySpawned(verifyQuestResult3)
 
-            if v1286 and v1286.PrimaryPart then
-                return "Killing: " .. v1286.Name, t78.value24(v1286, true)
+            if result74 and result74.PrimaryPart then
+                return "Killing: " .. result74.Name, Shared.Attack(result74, true)
             end
 
-            local QuestPosition = t78.value2:GetQuestPosition(Quest.Name)
+            local QuestPosition = Shared.QuestManager:GetQuestPosition(Quest.Name)
 
             if #EnemyPosition > 0 then
-                t78.value6:TweenToCFrameQueue(EnemyPosition)
+                Shared.TweenManager:TweenToCFrameQueue(EnemyPosition)
             elseif QuestPosition then
-                MoveCharacter(QuestPosition * t78.value2._Position)
+                MoveCharacter(QuestPosition * Shared.QuestManager._Position)
             end
 
-            return "Waiting for: " .. v1285
+            return "Waiting for: " .. verifyQuestResult3
         end
 
-        local value2 = t78.value2
+        local value2 = Shared.QuestManager
         local QuestName = Quest.Name
         local Count = Quest.Count
         local QuestName2 = Quest.Name
-        local t93 = { t78.value2:GetQuestPosition(QuestName2) }
+        local tbl89 = { Shared.QuestManager:GetQuestPosition(QuestName2) }
 
-        return value2:StartQuest(QuestName, Count, v1(t93))
+        return value2:StartQuest(QuestName, Count, unpackValues(tbl89))
     end)
-    v375("Mastery", function()
-        if t78.value9 == 3 and Level.Value >= t78.value8 then
-            return t78.value1.Bones()
+    NewOptionQueue("Mastery", function()
+        if Shared.Sea == 3 and Level.Value >= Shared.MaxLevel then
+            return Shared.OptionIndex.Bones()
         end
 
-        return t78.value1.Level()
+        return Shared.OptionIndex.Level()
     end)
-    v375("Material", function()
-        if v46.fMaterial then
-            return t78.value3:Material(v46.fMaterial)
+    NewOptionQueue("Material", function()
+        if settings.fMaterial then
+            return Shared.FarmManager:Material(settings.fMaterial)
         end
     end)
-    v375("Nearest", function()
-        local v1293 = t78.value74 and t78.value74.PrimaryPart
-        if v1293 then
-            local v1294 = t78.value10(t78.value74)
+    NewOptionQueue("Nearest", function()
+        local val187 = Shared.State10 and Shared.State10.PrimaryPart
+        if val187 then
+            local result75 = Shared.IsAlive(Shared.State10)
 
-            if v1294 then
-                v1294 = LocalPlayer:DistanceFromCharacter(v1293.Position) < 1500
+            if result75 then
+                result75 = LocalPlayer:DistanceFromCharacter(val187.Position) < 1500
             end
 
-            v1293 = v1294
+            val187 = result75
         end
-        if v1293 then
-            return "Killing: " .. t78.value74.Name, t78.value24(t78.value74, true, true)
+        if val187 then
+            return "Killing: " .. Shared.State10.Name, Shared.Attack(Shared.State10, true, true)
         end
-        local n14 = 1500
-        local v1296
+        local num16 = 1500
+        local val188
         for _, child in ipairs(Enemies:GetChildren()) do
             local PrimaryPart = child.PrimaryPart
 
-            if t78.value10(child) and PrimaryPart then
-                local v1300 = LocalPlayer:DistanceFromCharacter(PrimaryPart.Position)
+            if Shared.IsAlive(child) and PrimaryPart then
+                local distanceFromCharacterResult4 = LocalPlayer:DistanceFromCharacter(PrimaryPart.Position)
 
-                if v1300 < n14 then
-                    n14 = v1300
-                    v1296 = child
+                if distanceFromCharacterResult4 < num16 then
+                    num16 = distanceFromCharacterResult4
+                    val188 = child
                 end
             end
         end
-        if v1296 then
-            t78.value74 = v1296
-            t78.value24(v1296, true, true)
+        if val188 then
+            Shared.State10 = val188
+            Shared.Attack(val188, true, true)
 
             return true
         end
         task.wait(0.4)
     end)
 
-    if t78.value9 == 3 then
-        local u429 = false
+    if Shared.Sea == 3 then
+        local flag13 = false
 
-        local function v430()
-            t78.value77 = nil
+        local function helper49()
+            Shared.State13 = nil
         end
 
-        local t94 = {
+        local tbl90 = {
 			["Obtained <Color=Purple><Mutant Tooth><Color=/> (1x)"] = function()
-            t78.value26:UpdateBeltProgress("Red", 1)
+            Shared.DojoTrainer:UpdateBeltProgress("Red", 1)
         end,
 			["<Color=Yellow><QUEST COMPLETED!><Color=/>"] = function()
-            t78.value26:UpdateBeltProgress("White", 8)
+            Shared.DojoTrainer:UpdateBeltProgress("White", 8)
         end,
-			["Head back to the Dojo to complete more tasks."] = v430,
-			["Dojo quest abandoned!"] = v430
+			["Head back to the Dojo to complete more tasks."] = helper49,
+			["Dojo quest abandoned!"] = helper49
 		}
         local insert = table.insert
-        local v433 = v51
-        local t95 = { u55.Signals.Notify:Connect(function(p291)
-            local v1302 = t94[p291]
+        local val189 = connections
+        local tbl91 = { Module.Signals.Notify:Connect(function(arg1103)
+            local val190 = tbl90[arg1103]
 
-            if v1302 then
-                return v1302()
+            if val190 then
+                return val190()
             end
 
-            if p291:find("Earned <Color=Green>%$%d+<Color=/>") then
+            if arg1103:find("Earned <Color=Green>%$%d+<Color=/>") then
                 if LocalPlayer:GetAttribute("DangerLevel") >= 100 then
-                    t78.value26:UpdateBeltProgress("Yellow", 1)
+                    Shared.DojoTrainer:UpdateBeltProgress("Yellow", 1)
 
                     return
                 end
 
-                local v1303 = v48.DoughKing and VerifyTool("Sweet Chalice")
+                local val191 = enabledOptions.DoughKing and VerifyTool("Sweet Chalice")
 
-                if not v1303 then
-                    v1303 = not VerifyTool("God's Chalice") and v48.CakePrince
+                if not val191 then
+                    val191 = not VerifyTool("God's Chalice") and enabledOptions.CakePrince
                 end
 
-                if v1303 and not u429 then
-                    u429 = true
+                if val191 and not flag13 then
+                    flag13 = true
 
-                    if string.find(t78.value12("CakePrinceSpawner", true) or "Error", "Do you want to open the portal now?") then
-                        t78.value12("CakePrinceSpawner")
+                    if string.find(Shared.FireRemote("CakePrinceSpawner", true) or "Error", "Do you want to open the portal now?") then
+                        Shared.FireRemote("CakePrinceSpawner")
                     end
 
                     CheckingDebounce = false
@@ -7399,22 +7390,22 @@ function t7.StartFunctions(p254)
             end
         end) }
 
-        insert(v433, v1(t95))
+        insert(val189, unpackValues(tbl91))
     end
 end
-function t7.Webhooks(_)
-    if u55.Webhooks then
-        v4.load("{Utils}/BloxFruits/Webhooks.lua")(u55)
+function Core2.Webhooks(_)
+    if Module.Webhooks then
+        fetcher.load("{Utils}/BloxFruits/Webhooks.lua")(Module)
     end
 end
-local function v63(p293, ...)
+local function runStep(arg1104, ...)
     local timestamp = tick()
 
-    t7[p293](t7, ...)
-    print(p293, tick() - timestamp)
+    Core2[arg1104](Core2, ...)
+    print(arg1104, tick() - timestamp)
 end
-v63("Initialize")
-v63("StartFarm")
-v63("StartFunctions")
-task.spawn(v63, "LoadLibrary")
-task.spawn(v63, "Webhooks")
+runStep("Initialize")
+runStep("StartFarm")
+runStep("StartFunctions")
+task.spawn(runStep, "LoadLibrary")
+task.spawn(runStep, "Webhooks")
